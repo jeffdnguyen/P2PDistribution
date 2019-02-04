@@ -9,6 +9,6 @@ A P2P network for tranfering RFC files ([full description](https://moodle-course
 
 ## How to Run
 1. Sacrifice a healthy goat to Oracle so they don't sue you for using Java
-2. Become the 8,000,001st device that runs Java
+2. Become the 3,000,000,001st device that runs Java
 3. Compile
 4. Run
