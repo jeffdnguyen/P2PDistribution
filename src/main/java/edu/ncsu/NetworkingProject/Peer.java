@@ -1,9 +1,9 @@
 package edu.ncsu.NetworkingProject;
 
-class Main {
+public class Peer {
 
     public static void main(String[] args) {
-        System.out.println("Hello!");
+        System.out.println("I'm a peer!");
     }
 
 }
