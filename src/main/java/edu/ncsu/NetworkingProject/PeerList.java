@@ -1,25 +1,22 @@
 package edu.ncsu.NetworkingProject;
 
-import java.io.Serializable;
 import java.util.Date;
 
-public class PeerList implements Serializable {
+public class PeerList {
 
-    private static final long serialVersionUID = -140841477817596923L;
+    private String  hostname;
 
-    private String            hostname;
+    private int     cookie;
 
-    private int               cookie;
+    private boolean isActive;
 
-    private boolean           isActive;
+    private int     TTL;
 
-    private int               TTL;
+    private int     portNumber;
 
-    private int               portNumber;
+    private int     numberOfTimesActive;
 
-    private int               numberOfTimesActive;
-
-    private Date              lastActive;
+    private Date    lastActive;
 
     public String getHostname () {
         return hostname;
