@@ -1,6 +1,6 @@
 package edu.ncsu.NetworkingProject;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class PeerList {
 
@@ -16,7 +16,7 @@ public class PeerList {
 
     private int     numberOfTimesActive;
 
-    private Date    lastActive;
+    private LocalDateTime    lastActive;
 
     public String getHostname () {
         return hostname;
@@ -66,11 +66,11 @@ public class PeerList {
         this.numberOfTimesActive = numberOfTimesActive;
     }
 
-    public Date getLastActive () {
+    public LocalDateTime getLastActive () {
         return lastActive;
     }
 
-    public void setLastActive ( final Date lastActive ) {
+    public void setLastActive ( final LocalDateTime lastActive ) {
         this.lastActive = lastActive;
     }
 
