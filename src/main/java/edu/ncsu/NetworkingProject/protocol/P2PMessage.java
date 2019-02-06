@@ -49,6 +49,7 @@ public abstract class P2PMessage {
      */
     static {
         registerMessageType("GetRFC", GetRFCMessage.class);
+        registerMessageType("Register", RegisterMessage.class);
     }
 
     /**
