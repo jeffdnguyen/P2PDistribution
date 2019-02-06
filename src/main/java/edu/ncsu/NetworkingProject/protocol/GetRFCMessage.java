@@ -7,17 +7,14 @@ public class GetRFCMessage extends P2PMessage {
 
     private int RFCID;
 
-    GetRFCMessage() {}
-
-    public GetRFCMessage(int RFCID) {
-        this.RFCID = RFCID;
-    }
-
-    @Override
-    protected void applyArgumentAndHeaders(String argument, List<P2PHeader> headers) {
+    GetRFCMessage(String argument, List<P2PHeader> headers) {
         if (argument.isEmpty()) throw new ProtocolException.MissingArgumentException();
 
         RFCID = Integer.parseInt(argument.split(" ")[1]);
+    }
+
+    public GetRFCMessage(int RFCID) {
+        this.RFCID = RFCID;
     }
 
     @Override

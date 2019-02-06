@@ -58,22 +58,6 @@ public abstract class P2PMessage {
     public static P2PMessage constructMessageFromString(String messageAsString) {
         String[] lines = messageAsString.split("\n");
         String[] firstLineTokens = lines[0].split(" ");
-        P2PMessage message = null;
-        for (Pair<String, Class<? extends P2PMessage>> messageType : messageTypes) {
-            if (firstLineTokens[0].equals(messageType.first)) {
-                try {
-                    message = messageType.second.getDeclaredConstructor().newInstance();
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                } catch (NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
-                break;
-            }
-        }
-        if (message == null) {
-            throw new ProtocolException.NoSuchMessageType(firstLineTokens[0]);
-        }
 
         StringBuilder argument = new StringBuilder();
         for (int i = 1; i < firstLineTokens.length - 1; i++) {
@@ -86,19 +70,25 @@ public abstract class P2PMessage {
                 .map(line -> new P2PHeader(line.substring(0, line.indexOf(":")), line.substring(line.indexOf(":") + 1)))
                 .collect(Collectors.toList());
 
-        message.applyArgumentAndHeaders(argument.toString(), headers);
+        P2PMessage message = null;
+        for (Pair<String, Class<? extends P2PMessage>> messageType : messageTypes) {
+            if (firstLineTokens[0].equals(messageType.first)) {
+                try {
+                    message = messageType.second.getDeclaredConstructor(String.class, List.class).newInstance(argument.toString(), headers);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            }
+        }
+        if (message == null) {
+            throw new ProtocolException.NoSuchMessageType(firstLineTokens[0]);
+        }
 
         return message;
     }
-
-    /**
-     * Applies the given argument and headers to the object. Called as part of
-     * instantiation from a string.
-     *
-     * @param argument whatever argument was passed in the message.
-     * @param headers a list of any included headers.
-     */
-    protected abstract void applyArgumentAndHeaders(String argument, List<P2PHeader> headers);
 
     /**
      * Gets the argument for this message.
