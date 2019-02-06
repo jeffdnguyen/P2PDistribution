@@ -7,6 +7,7 @@ public class GetRFCMessage extends P2PMessage {
 
     private int RFCID;
 
+    @SuppressWarnings("unused")
     GetRFCMessage(String argument, List<P2PHeader> headers) {
         if (argument.isEmpty()) throw new ProtocolException.MissingArgumentException();
 
