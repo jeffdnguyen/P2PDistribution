@@ -18,6 +18,10 @@ public class GetRFCMessage extends P2PMessage {
         this.RFCID = RFCID;
     }
 
+    public int getRFCID() {
+        return RFCID;
+    }
+
     @Override
     protected String getMethodArgument() {
         return "RFC " + this.RFCID;
