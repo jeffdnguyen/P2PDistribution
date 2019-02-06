@@ -8,7 +8,7 @@ public class GetRFCMessage extends P2PMessage {
     private int RFCID;
 
     @SuppressWarnings("unused")
-    GetRFCMessage(String argument, List<P2PHeader> headers) {
+    GetRFCMessage(String argument, List<P2PHeader> headers, byte[] data) {
         if (argument.isEmpty()) throw new ProtocolException.MissingArgumentException();
 
         RFCID = Integer.parseInt(argument.split(" ")[1]);
@@ -25,5 +25,10 @@ public class GetRFCMessage extends P2PMessage {
 
     @Override
     protected void addHeaders(LinkedList<P2PHeader> headers) { }
+
+    @Override
+    protected byte[] getMessageData() {
+        return null;
+    }
 
 }

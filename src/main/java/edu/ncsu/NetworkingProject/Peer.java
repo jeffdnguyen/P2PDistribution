@@ -7,7 +7,7 @@ public class Peer {
 
     public static void main(String[] args) {
         GetRFCMessage message = new GetRFCMessage(143);
-        P2PMessage.constructMessageFromString(message.toString());
+        P2PMessage.constructMessageFromBytes(message.toByteArray());
     }
 
 }
