@@ -7,7 +7,7 @@ public class GetRFCMessage extends P2PMessage {
 
     private int RFCID;
 
-    public GetRFCMessage() {}
+    GetRFCMessage() {}
 
     public GetRFCMessage(int RFCID) {
         this.RFCID = RFCID;

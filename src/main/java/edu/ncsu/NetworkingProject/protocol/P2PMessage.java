@@ -62,7 +62,7 @@ public abstract class P2PMessage {
         for (Pair<String, Class<? extends P2PMessage>> messageType : messageTypes) {
             if (firstLineTokens[0].equals(messageType.first)) {
                 try {
-                    message = messageType.second.getConstructor().newInstance();
+                    message = messageType.second.getDeclaredConstructor().newInstance();
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
                 } catch (NoSuchMethodException e) {
