@@ -6,6 +6,7 @@ import java.net.Socket;
 
 public class RegServer {
 
+    @SuppressWarnings ( "unused" )
     public static void main ( final String[] args ) {
         ServerSocket welcomeSocket;
         try {
