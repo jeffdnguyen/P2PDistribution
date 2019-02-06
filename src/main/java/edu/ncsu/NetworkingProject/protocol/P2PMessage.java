@@ -101,7 +101,7 @@ public abstract class P2PMessage {
     }
 
     /**
-     * Gets the argument for this message.
+     * Gets the argument for this message. Null if no argument.
      *
      * @return the said argument.
      */
