@@ -7,6 +7,7 @@ import java.util.LinkedList;
 
 import edu.ncsu.NetworkingProject.protocol.P2PMessage;
 import edu.ncsu.NetworkingProject.protocol.RegisterMessage;
+import edu.ncsu.NetworkingProject.protocol.RegisterResponseMessage;
 
 class ConnectionHandler implements Runnable {
 
@@ -29,7 +30,6 @@ class ConnectionHandler implements Runnable {
         P2PMessage message = connection.waitForNextMessage();
 
         if ( message instanceof RegisterMessage ) {
-            try {
                 RegisterMessage recievedRegisterMessage = (RegisterMessage) message;
 
                 int portNumber = recievedRegisterMessage.getPortNumber();
@@ -47,26 +47,8 @@ class ConnectionHandler implements Runnable {
 
                 peerList.add( newPeer );
 
-                
-                // Commented out code is attempt to add headers to the response message. Not sure how to do that??  
-                // Passing in a whole LinkedList instead of an individual P2PHeader doesn't make any sense to me 
-                // when looking at the toByteArray() method.
-                
-                /**
-                 * LinkedList<P2PHeader> headerList = new LinkedList<P2PHeader>();
-                 * P2PHeader portNumberHeader = new P2PHeader("PortNumber", "" + portNumber);
-                 * 
-                 * headerList.add( portNumberHeader );
-                 */
-
-                RegisterMessage response = new RegisterMessage( portNumber, 100, "Peer successfully registered" );
+                RegisterResponseMessage response = new RegisterResponseMessage(100, "(Success)", cookie );
                 connection.send( response );
-
-            }
-            catch ( IllegalArgumentException e ) {
-                RegisterMessage response = new RegisterMessage( -1, 200, "Peer was not registered" );
-                connection.send( response );
-            }
             
             try {
                 connectionSocket.close();
