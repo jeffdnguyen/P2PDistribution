@@ -22,4 +22,11 @@ public abstract class ProtocolException extends RuntimeException {
 
     }
 
+    public static class UnexpectedArgumentException extends ProtocolException {
+
+        public UnexpectedArgumentException() {
+            super("The given message argument was not expected.");
+        }
+    }
+
 }
