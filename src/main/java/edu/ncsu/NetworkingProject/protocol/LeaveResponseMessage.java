@@ -2,7 +2,7 @@ package edu.ncsu.NetworkingProject.protocol;
 
 import java.util.LinkedList;
 
-public class RegisterResponseMessage extends P2PMessage {
+public class LeaveResponseMessage extends P2PMessage {
 
     // The Register response message should look like the following:
     //
@@ -14,7 +14,7 @@ public class RegisterResponseMessage extends P2PMessage {
     private String phrase     = "";
     private int    cookie     = -1;
 
-    public RegisterResponseMessage ( int statusCode, String phrase, int cookie ) {
+    public LeaveResponseMessage ( int statusCode, String phrase, int cookie ) {
         this.statusCode = statusCode;
         this.phrase = phrase;
         this.cookie = cookie;

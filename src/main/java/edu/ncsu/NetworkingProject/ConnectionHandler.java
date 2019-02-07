@@ -5,6 +5,8 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 
+import edu.ncsu.NetworkingProject.protocol.LeaveMessage;
+import edu.ncsu.NetworkingProject.protocol.LeaveResponseMessage;
 import edu.ncsu.NetworkingProject.protocol.P2PMessage;
 import edu.ncsu.NetworkingProject.protocol.RegisterMessage;
 import edu.ncsu.NetworkingProject.protocol.RegisterResponseMessage;
@@ -57,14 +59,16 @@ class ConnectionHandler implements Runnable {
             RegisterMessage request = (RegisterMessage) message;
 
             int portNumber = request.getPortNumber();
-
+            int currentCookie = request.getCookie();
+            
             // If cookie is -1, then this is a new peer
-            if ( request.getCookie() == -1 ) {
+            if ( currentCookie == -1 ) {
                 PeerList newPeer = new PeerList();
                 cookie += 1;
+                currentCookie = cookie;
 
                 newPeer.setHostname( connectionSocket.getInetAddress().getHostName() );
-                newPeer.setCookie( cookie );
+                newPeer.setCookie( currentCookie );
                 newPeer.setActive( true );
                 newPeer.setTTL( 7200 );
                 newPeer.setPortNumber( portNumber );
@@ -76,7 +80,7 @@ class ConnectionHandler implements Runnable {
             else {
                 // Find the existing peer and update it
                 for ( PeerList peer : peerList ) {
-                    if ( peer.getCookie() == request.getCookie() ) {
+                    if ( peer.getCookie() == currentCookie ) {
                         peer.setActive( true );
                         peer.setTTL( 7200 );
                         peer.setNumberOfTimesActive( peer.getNumberOfTimesActive() + 1 );
@@ -84,22 +88,31 @@ class ConnectionHandler implements Runnable {
                     }
                 }
             }
-            
+
             // Send response back to the peer
-            RegisterResponseMessage response = new RegisterResponseMessage( 100, "(Success)", cookie );
+            RegisterResponseMessage response = new RegisterResponseMessage( 100, "(Success)", currentCookie );
+            connection.send( response );
+        }
+        else if ( message instanceof LeaveMessage ) {
+            LeaveMessage request = (LeaveMessage) message;
+            for ( PeerList peer : peerList ) {
+                if ( peer.getCookie() == request.getCookie() ) {
+                    peer.setTTL( 0 );
+                    break;
+                }
+            }
+
+            LeaveResponseMessage response = new LeaveResponseMessage( 100, "(Success)", request.getCookie() );
             connection.send( response );
 
-            // Close TCP connection
-            try {
-                connectionSocket.close();
-            }
-            catch ( IOException e ) {
-                e.printStackTrace();
-            }
         }
-        else {
-
+        
+        // Close TCP connection
+        try {
+            connectionSocket.close();
         }
-
+        catch ( IOException e ) {
+            e.printStackTrace();
+        }
     }
 }

@@ -51,6 +51,8 @@ public abstract class P2PMessage {
         registerMessageType("GetRFC", GetRFCMessage.class);
         registerMessageType("Register", RegisterMessage.class);
         registerMessageType("RegisterResponse", RegisterResponseMessage.class);
+        registerMessageType("Leave", LeaveMessage.class);
+        registerMessageType("LeaveResponse", LeaveResponseMessage.class);
     }
 
     /**
