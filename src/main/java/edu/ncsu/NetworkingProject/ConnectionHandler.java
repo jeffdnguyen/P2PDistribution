@@ -30,10 +30,12 @@ class ConnectionHandler implements Runnable {
         P2PMessage message = connection.waitForNextMessage();
 
         if ( message instanceof RegisterMessage ) {
-                RegisterMessage recievedRegisterMessage = (RegisterMessage) message;
+            RegisterMessage request = (RegisterMessage) message;
 
-                int portNumber = recievedRegisterMessage.getPortNumber();
+            int portNumber = request.getPortNumber();
 
+            // If cookie is -1, then this is a new peer
+            if ( request.getCookie() == -1 ) {
                 PeerList newPeer = new PeerList();
                 cookie += 1;
 
@@ -42,14 +44,25 @@ class ConnectionHandler implements Runnable {
                 newPeer.setActive( true );
                 newPeer.setTTL( 7200 );
                 newPeer.setPortNumber( portNumber );
-                newPeer.setNumberOfTimesActive( 0 );
+                newPeer.setNumberOfTimesActive( 1 );
                 newPeer.setLastActive( LocalDateTime.now() );
 
                 peerList.add( newPeer );
-
-                RegisterResponseMessage response = new RegisterResponseMessage(100, "(Success)", cookie );
-                connection.send( response );
+            }
+            else {
+                for(PeerList peer : peerList) {
+                    if (peer.getCookie() == request.getCookie()) {
+                        peer.setActive( true );
+                        peer.setTTL( 7200 );
+                        peer.setNumberOfTimesActive( peer.getNumberOfTimesActive() + 1 );
+                        break;
+                    }
+                }
+            }
             
+            RegisterResponseMessage response = new RegisterResponseMessage( 100, "(Success)", cookie );
+            connection.send( response );
+
             try {
                 connectionSocket.close();
             }

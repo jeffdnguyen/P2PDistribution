@@ -6,7 +6,7 @@ public class RegisterResponseMessage extends P2PMessage {
     
     //The Register response message should look like the following:
     //
-    //REGISTER Status:100 (Success) P2P-DI/1.0
+    //RegisterResponse Status:100 (Success) P2P-DI/1.0
     //Host: somehost.csc.ncsu.edu
     //Cookie: 14234
     
