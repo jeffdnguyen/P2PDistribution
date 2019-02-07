@@ -8,6 +8,9 @@ import java.util.LinkedList;
 import edu.ncsu.NetworkingProject.protocol.LeaveMessage;
 import edu.ncsu.NetworkingProject.protocol.LeaveResponseMessage;
 import edu.ncsu.NetworkingProject.protocol.P2PMessage;
+import edu.ncsu.NetworkingProject.protocol.PQueryMessage;
+import edu.ncsu.NetworkingProject.protocol.PQueryResponseMessage;
+import edu.ncsu.NetworkingProject.protocol.ProtocolException;
 import edu.ncsu.NetworkingProject.protocol.RegisterMessage;
 import edu.ncsu.NetworkingProject.protocol.RegisterResponseMessage;
 
@@ -106,7 +109,22 @@ class ConnectionHandler implements Runnable {
             connection.send( response );
 
         }
-        
+        else if ( message instanceof PQueryMessage ) {
+            LinkedList<PeerList> activePeers = new LinkedList<PeerList>();
+            
+            for ( PeerList peer : peerList ) {
+                // Only add active peers to the list
+                if (peer.isActive()) {
+                    activePeers.add( peer );
+                }
+            }
+            
+            PQueryResponseMessage response = new PQueryResponseMessage(100, "(Success)", activePeers);
+            connection.send( response );
+        }
+        else {
+            throw new ProtocolException.NoSuchMessageType(message.getClass().toString());
+        }
         // Close TCP connection
         try {
             connectionSocket.close();

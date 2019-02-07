@@ -53,6 +53,8 @@ public abstract class P2PMessage {
         registerMessageType("RegisterResponse", RegisterResponseMessage.class);
         registerMessageType("Leave", LeaveMessage.class);
         registerMessageType("LeaveResponse", LeaveResponseMessage.class);
+        registerMessageType("PQuery", PQueryMessage.class);
+        registerMessageType("PQueryResponse", PQueryResponseMessage.class);
     }
 
     /**
