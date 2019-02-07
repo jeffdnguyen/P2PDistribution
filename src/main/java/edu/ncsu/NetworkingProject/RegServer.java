@@ -7,13 +7,13 @@ import java.net.Socket;
 public class RegServer {
 
     @SuppressWarnings ( "unused" )
-    public static void main ( final String[] args ) {
+    public static void main ( String[] args ) {
         ServerSocket welcomeSocket;
         try {
             welcomeSocket = new ServerSocket( 65423 );
             while ( true ) {
-                final Socket connectionSocket = welcomeSocket.accept();
-                final ConnectionHandler connection = new ConnectionHandler( connectionSocket );
+                Socket connectionSocket = welcomeSocket.accept();
+                ConnectionHandler connection = new ConnectionHandler( connectionSocket );
             }
         }
         catch ( final IOException e ) {
