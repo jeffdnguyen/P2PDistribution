@@ -1,5 +1,6 @@
 package edu.ncsu.NetworkingProject;
 
+import java.sql.Time;
 import java.time.LocalDateTime;
 
 public class PeerList {
@@ -46,10 +47,10 @@ public class PeerList {
         return TTL;
     }
 
-    public void setTTL ( final int tTL ) {
-        TTL = tTL;
+    public void setTTL ( final int TTL ) {
+        this.TTL = TTL;
     }
-
+    
     public int getPortNumber () {
         return portNumber;
     }
