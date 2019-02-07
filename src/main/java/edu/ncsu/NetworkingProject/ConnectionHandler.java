@@ -11,22 +11,46 @@ import edu.ncsu.NetworkingProject.protocol.RegisterResponseMessage;
 
 class ConnectionHandler implements Runnable {
 
+    /**
+     * Socket peer is connected to
+     */
     Socket               connectionSocket;
+
+    /**
+     * Thread that this connection is running on
+     */
     Thread               clientThread;
+
+    /**
+     * Unique cookie of the peer currently connected
+     */
     int                  cookie   = 0;
 
+    /**
+     * List of peers that are registered with the RegServer
+     */
     LinkedList<PeerList> peerList = new LinkedList<PeerList>();
 
+    /**
+     * Creates new thread to handle new connection at the passed in socket
+     * 
+     * @param socket
+     *            the socket with the new connection
+     */
     ConnectionHandler ( final Socket socket ) {
         connectionSocket = socket;
         clientThread = new Thread( this );
         clientThread.start();
     }
 
+    /**
+     * Handles sequence of messages between the peer and RegServer
+     */
     @Override
     public void run () {
         Connection connection = new Connection( connectionSocket );
 
+        // Grab the incoming message
         P2PMessage message = connection.waitForNextMessage();
 
         if ( message instanceof RegisterMessage ) {
@@ -50,8 +74,9 @@ class ConnectionHandler implements Runnable {
                 peerList.add( newPeer );
             }
             else {
-                for(PeerList peer : peerList) {
-                    if (peer.getCookie() == request.getCookie()) {
+                // Find the existing peer and update it
+                for ( PeerList peer : peerList ) {
+                    if ( peer.getCookie() == request.getCookie() ) {
                         peer.setActive( true );
                         peer.setTTL( 7200 );
                         peer.setNumberOfTimesActive( peer.getNumberOfTimesActive() + 1 );
@@ -59,10 +84,12 @@ class ConnectionHandler implements Runnable {
                     }
                 }
             }
-            
+
+            // Send response back to the peer
             RegisterResponseMessage response = new RegisterResponseMessage( 100, "(Success)", cookie );
             connection.send( response );
 
+            // Close TCP connection
             try {
                 connectionSocket.close();
             }
