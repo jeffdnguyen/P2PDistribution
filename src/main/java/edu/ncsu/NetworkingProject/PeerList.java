@@ -1,22 +1,26 @@
 package edu.ncsu.NetworkingProject;
 
 import java.time.LocalDateTime;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class PeerList {
 
-    private String  hostname;
+    private String        hostname;
 
-    private int     cookie;
+    private int           cookie;
 
-    private boolean isActive;
+    private boolean       isActive;
 
-    private int     TTL;
+    private int           TTL;
 
-    private int     portNumber;
+    private int           portNumber;
 
-    private int     numberOfTimesActive;
+    private int           numberOfTimesActive;
 
-    private LocalDateTime    lastActive;
+    private LocalDateTime lastActive;
+
+    private Timer         timer;
 
     public String getHostname () {
         return hostname;
@@ -48,8 +52,16 @@ public class PeerList {
 
     public void setTTL ( final int TTL ) {
         this.TTL = TTL;
+        if ( isActive )
+            decayTTL();
     }
-    
+
+    private void decayTTL () {
+        timer.cancel();
+        timer = new Timer( true );
+        timer.schedule( new deactivatePeer(), getTTL() * 1000 );
+    }
+
     public int getPortNumber () {
         return portNumber;
     }
@@ -72,6 +84,12 @@ public class PeerList {
 
     public void setLastActive ( final LocalDateTime lastActive ) {
         this.lastActive = lastActive;
+    }
+
+    class deactivatePeer extends TimerTask {
+        public void run () {
+            isActive = false;
+        }
     }
 
 }

@@ -84,7 +84,7 @@ class ConnectionHandler implements Runnable {
                     }
                 }
             }
-
+            
             // Send response back to the peer
             RegisterResponseMessage response = new RegisterResponseMessage( 100, "(Success)", cookie );
             connection.send( response );
@@ -96,12 +96,10 @@ class ConnectionHandler implements Runnable {
             catch ( IOException e ) {
                 e.printStackTrace();
             }
-
         }
         else {
 
         }
 
     }
-
 }
