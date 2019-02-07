@@ -11,8 +11,10 @@ public class RegServer {
         ServerSocket welcomeSocket;
         try {
             welcomeSocket = new ServerSocket( 65423 );
-            final Socket connectionSocket = welcomeSocket.accept();
-            final ConnectionHandler connection = new ConnectionHandler( connectionSocket );
+            while ( true ) {
+                final Socket connectionSocket = welcomeSocket.accept();
+                final ConnectionHandler connection = new ConnectionHandler( connectionSocket );
+            }
         }
         catch ( final IOException e ) {
             e.printStackTrace();
