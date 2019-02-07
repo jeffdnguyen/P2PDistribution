@@ -5,6 +5,8 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 
+import edu.ncsu.NetworkingProject.protocol.KeepAliveMessage;
+import edu.ncsu.NetworkingProject.protocol.KeepAliveResponseMessage;
 import edu.ncsu.NetworkingProject.protocol.LeaveMessage;
 import edu.ncsu.NetworkingProject.protocol.LeaveResponseMessage;
 import edu.ncsu.NetworkingProject.protocol.P2PMessage;
@@ -120,6 +122,18 @@ class ConnectionHandler implements Runnable {
             }
             
             PQueryResponseMessage response = new PQueryResponseMessage(100, "(Success)", activePeers);
+            connection.send( response );
+        }
+        else if ( message instanceof KeepAliveMessage ) {
+            KeepAliveMessage request = (KeepAliveMessage) message;
+            for ( PeerList peer : peerList ) {
+                if ( peer.getCookie() == request.getCookie() ) {
+                    peer.setTTL( 7200 );
+                    break;
+                }
+            }
+            
+            KeepAliveResponseMessage response = new KeepAliveResponseMessage( 100, "(Success)", request.getCookie() );
             connection.send( response );
         }
         else {

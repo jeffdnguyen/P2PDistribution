@@ -3,11 +3,11 @@ package edu.ncsu.NetworkingProject.protocol;
 import java.util.LinkedList;
 import java.util.List;
 
-public class LeaveMessage extends P2PMessage {
+public class KeepAliveMessage extends P2PMessage {
 
-    // The Leave request message should look like the following:
+    // The KeepAlive request message should look like the following:
     //
-    // Leave RegServer P2P-DI/1.0
+    // KeepAlive RegServer P2P-DI/1.0
     // Host: somehost.csc.ncsu.edu
     // Cookie: 12390
     
@@ -18,7 +18,7 @@ public class LeaveMessage extends P2PMessage {
      */
     private int cookie = -1;
     
-    public LeaveMessage ( String argument, List<P2PHeader> headers, byte[] data ) {
+    public KeepAliveMessage ( String argument, List<P2PHeader> headers, byte[] data ) {
         if ( argument.isEmpty() )
             throw new ProtocolException.MissingArgumentException();
 

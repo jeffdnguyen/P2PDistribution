@@ -55,6 +55,8 @@ public abstract class P2PMessage {
         registerMessageType("LeaveResponse", LeaveResponseMessage.class);
         registerMessageType("PQuery", PQueryMessage.class);
         registerMessageType("PQueryResponse", PQueryResponseMessage.class);
+        registerMessageType("KeepAlive", PQueryMessage.class);
+        registerMessageType("KeepAliveResponse", PQueryResponseMessage.class);
     }
 
     /**

@@ -2,11 +2,11 @@ package edu.ncsu.NetworkingProject.protocol;
 
 import java.util.LinkedList;
 
-public class LeaveResponseMessage extends P2PMessage {
+public class KeepAliveResponseMessage extends P2PMessage {
 
-    // The Leave response message should look like the following:
+    // The KeepAlive response message should look like the following:
     //
-    // LeaveResponse Status:100 (Success) P2P-DI/1.0
+    // KeepAliveResponse Status:100 (Success) P2P-DI/1.0
     // Host: somehost.csc.ncsu.edu
     // Cookie: 14234
 
@@ -14,7 +14,7 @@ public class LeaveResponseMessage extends P2PMessage {
     private String phrase     = "";
     private int    cookie     = -1;
 
-    public LeaveResponseMessage ( int statusCode, String phrase, int cookie ) {
+    public KeepAliveResponseMessage ( int statusCode, String phrase, int cookie ) {
         this.statusCode = statusCode;
         this.phrase = phrase;
         this.cookie = cookie;
