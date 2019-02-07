@@ -27,6 +27,15 @@ public abstract class ProtocolException extends RuntimeException {
         public UnexpectedArgumentException() {
             super("The given message argument was not expected.");
         }
+
+    }
+
+    public static class UnexpectedMessageException extends ProtocolException {
+
+        public UnexpectedMessageException(P2PMessage message) {
+            super("Unexpectedly recieved message of type " + message.getClass());
+        }
+
     }
 
 }

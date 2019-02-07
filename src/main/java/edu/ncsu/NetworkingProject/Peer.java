@@ -1,13 +1,28 @@
 package edu.ncsu.NetworkingProject;
 
-import edu.ncsu.NetworkingProject.protocol.GetRFCMessage;
-import edu.ncsu.NetworkingProject.protocol.P2PMessage;
+import java.io.File;
 
 public class Peer {
 
+    public static final File rfcRoot = new File("./rfcs/");
+
+    private static RFCIndex rfcIndex = new RFCIndex();
+
     public static void main(String[] args) {
-        GetRFCMessage message = new GetRFCMessage(143);
-        P2PMessage.constructMessageFromBytes(message.toByteArray());
+        addLocalRfcFiles();
+
+        RFCPeerServer server = new RFCPeerServer(8765, rfcIndex);
+        Thread serverThread = new Thread(server);
+        serverThread.setName("RFC server thread");
+        serverThread.start();
+    }
+
+    private static void addLocalRfcFiles() {
+        for (File file : rfcRoot.listFiles()) {
+            if (!file.getName().startsWith("rfc")) continue;
+            RFCFile rfcFile = new RFCFile(file);
+            rfcIndex.index.add(new RFCIndexEntry(rfcFile.id, rfcFile.title));
+        }
     }
 
 }

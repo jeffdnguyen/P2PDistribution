@@ -8,7 +8,7 @@ import java.util.List;
 
 public class RFCIndexMessage extends P2PMessage {
 
-    private final RFCIndex index;
+    public final RFCIndex index;
 
     RFCIndexMessage(String argument, List<P2PHeader> headers, byte[] data) {
         if (!argument.equals(getMethodArgument())) throw new ProtocolException.UnexpectedArgumentException();
@@ -18,11 +18,11 @@ public class RFCIndexMessage extends P2PMessage {
             index = (RFCIndex) input.readObject();
             input.close();
         } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("Unable to instantiate RFCIndex from data given", e);
+            throw new RuntimeException("Unable to instantiate RFCIndexEntry from data given", e);
         }
     }
 
-    RFCIndexMessage(RFCIndex index) {
+    public RFCIndexMessage(RFCIndex index) {
         this.index = index;
     }
     
