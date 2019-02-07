@@ -10,26 +10,26 @@ public class LeaveMessage extends P2PMessage {
     // Leave RegServer P2P-DI/1.0
     // Host: somehost.csc.ncsu.edu
     // Cookie: 12390
-    
+
     private String serverName = "";
-    
+
     /**
      * Cookie if this is not the first time registering
      */
-    private int cookie = -1;
-    
+    private int    cookie     = -1;
+
     public LeaveMessage ( String argument, List<P2PHeader> headers, byte[] data ) {
         if ( argument.isEmpty() )
             throw new ProtocolException.MissingArgumentException();
 
         // Grab server name from argument
         serverName = argument;
-        
+
         // Grab cookie from request
         if ( headers.size() > 1 )
             cookie = Integer.parseInt( headers.get( 1 ).value );
     }
-    
+
     /**
      * Get the cookie of this request
      * 
@@ -38,7 +38,7 @@ public class LeaveMessage extends P2PMessage {
     public int getCookie () {
         return this.cookie;
     }
-    
+
     /**
      * Get the server name of this request
      * 
@@ -47,7 +47,7 @@ public class LeaveMessage extends P2PMessage {
     public String getServerName () {
         return this.serverName;
     }
-    
+
     @Override
     protected String getMethodArgument () {
         return serverName;
@@ -55,6 +55,7 @@ public class LeaveMessage extends P2PMessage {
 
     @Override
     protected void addHeaders ( LinkedList<P2PHeader> headers ) {
+        headers.add( new P2PHeader( "Cookie", String.valueOf( cookie ) ) );
     }
 
     @Override

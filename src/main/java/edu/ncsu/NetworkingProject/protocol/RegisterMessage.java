@@ -79,6 +79,7 @@ public class RegisterMessage extends P2PMessage {
      */
     @Override
     protected void addHeaders ( final LinkedList<P2PHeader> headers ) {
+        headers.add( new P2PHeader( "Cookie", String.valueOf( cookie ) ) );
     }
 
     /**

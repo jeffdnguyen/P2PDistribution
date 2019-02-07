@@ -55,6 +55,7 @@ public class KeepAliveMessage extends P2PMessage {
 
     @Override
     protected void addHeaders ( LinkedList<P2PHeader> headers ) {
+        headers.add( new P2PHeader( "Cookie", String.valueOf( cookie ) ) );
     }
 
     @Override
