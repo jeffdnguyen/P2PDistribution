@@ -57,7 +57,9 @@ public class PeerList {
     }
 
     private void decayTTL () {
-        timer.cancel();
+        if ( timer != null ) {
+            timer.cancel();
+        }
         timer = new Timer( true );
         timer.schedule( new deactivatePeer(), getTTL() * 1000 );
     }
