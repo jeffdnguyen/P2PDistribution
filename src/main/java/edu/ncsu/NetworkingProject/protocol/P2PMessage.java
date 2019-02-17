@@ -57,6 +57,9 @@ public abstract class P2PMessage {
         registerMessageType("PQueryResponse", PQueryResponseMessage.class);
         registerMessageType("KeepAlive", PQueryMessage.class);
         registerMessageType("KeepAliveResponse", PQueryResponseMessage.class);
+        registerMessageType("RFCQuery", RFCQueryMessage.class);
+        registerMessageType("RFCResponse", RFCResponseMessage.class);
+        registerMessageType("RFCIndex", RFCIndexMessage.class);
     }
 
     /**
@@ -128,7 +131,7 @@ public abstract class P2PMessage {
      */
     protected abstract byte[] getMessageData();
 
-    private String getHostname() {
+    public static String getHostname() {
         try(final DatagramSocket socket = new DatagramSocket()){
             socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
             return socket.getLocalAddress().getHostAddress();
@@ -137,7 +140,7 @@ public abstract class P2PMessage {
         }
     }
 
-    public byte[] toByteArray() {
+    private String getTextComponent() {
         StringBuilder outputText = new StringBuilder();
 
         String methodName = messageTypes.stream()
@@ -167,12 +170,22 @@ public abstract class P2PMessage {
             outputText.append(header.value);
             outputText.append("\n");
         }
-        byte[] textAsBytes = outputText.toString().getBytes();
+        return outputText.toString();
+    }
+
+    public byte[] toByteArray() {
+
+        byte[] textAsBytes = getTextComponent().getBytes();
         byte[] data = getMessageData();
         if (data != null) {
             return ByteBuffer.allocate(4 + textAsBytes.length + data.length).putInt(textAsBytes.length).put(textAsBytes).put(data).array();
         } else {
             return ByteBuffer.allocate(4 + textAsBytes.length).putInt(textAsBytes.length).put(textAsBytes).array();
         }
+    }
+
+    @Override
+    public String toString() {
+        return getTextComponent();
     }
 }
