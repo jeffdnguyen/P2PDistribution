@@ -49,6 +49,14 @@ public abstract class P2PMessage {
      */
     static {
         registerMessageType("GetRFC", GetRFCMessage.class);
+        registerMessageType("Register", RegisterMessage.class);
+        registerMessageType("RegisterResponse", RegisterResponseMessage.class);
+        registerMessageType("Leave", LeaveMessage.class);
+        registerMessageType("LeaveResponse", LeaveResponseMessage.class);
+        registerMessageType("PQuery", PQueryMessage.class);
+        registerMessageType("PQueryResponse", PQueryResponseMessage.class);
+        registerMessageType("KeepAlive", PQueryMessage.class);
+        registerMessageType("KeepAliveResponse", PQueryResponseMessage.class);
         registerMessageType("RFCQuery", RFCQueryMessage.class);
         registerMessageType("RFCResponse", RFCResponseMessage.class);
         registerMessageType("RFCIndex", RFCIndexMessage.class);
