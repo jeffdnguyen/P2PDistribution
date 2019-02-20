@@ -1,4 +1,8 @@
-package edu.ncsu.NetworkingProject.protocol;
+package edu.ncsu.NetworkingProject.protocol.messages;
+
+import edu.ncsu.NetworkingProject.protocol.P2PHeader;
+import edu.ncsu.NetworkingProject.protocol.P2PMessage;
+import edu.ncsu.NetworkingProject.protocol.ProtocolException;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -36,7 +40,7 @@ public class RegisterMessage extends P2PMessage {
      * @param data
      *            any data the request method may hold
      */
-    public RegisterMessage ( String argument, List<P2PHeader> headers, byte[] data ) {
+    public RegisterMessage (String argument, List<P2PHeader> headers, byte[] data ) {
         if ( argument.isEmpty() )
             throw new ProtocolException.MissingArgumentException();
 
@@ -80,14 +84,6 @@ public class RegisterMessage extends P2PMessage {
     @Override
     protected void addHeaders ( final LinkedList<P2PHeader> headers ) {
         headers.add( new P2PHeader( "Cookie", String.valueOf( cookie ) ) );
-    }
-
-    /**
-     * Register request has no data, always return null
-     */
-    @Override
-    protected byte[] getMessageData () {
-        return null;
     }
 
 }

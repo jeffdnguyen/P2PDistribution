@@ -1,20 +1,18 @@
 package edu.ncsu.NetworkingProject;
 
+import edu.ncsu.NetworkingProject.protocol.P2PMessage;
+import edu.ncsu.NetworkingProject.protocol.P2PResponse;
+import edu.ncsu.NetworkingProject.protocol.ProtocolException;
+import edu.ncsu.NetworkingProject.protocol.Status;
+import edu.ncsu.NetworkingProject.protocol.messages.KeepAliveMessage;
+import edu.ncsu.NetworkingProject.protocol.messages.LeaveMessage;
+import edu.ncsu.NetworkingProject.protocol.messages.PQueryMessage;
+import edu.ncsu.NetworkingProject.protocol.messages.RegisterMessage;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
-
-import edu.ncsu.NetworkingProject.protocol.KeepAliveMessage;
-import edu.ncsu.NetworkingProject.protocol.KeepAliveResponseMessage;
-import edu.ncsu.NetworkingProject.protocol.LeaveMessage;
-import edu.ncsu.NetworkingProject.protocol.LeaveResponseMessage;
-import edu.ncsu.NetworkingProject.protocol.P2PMessage;
-import edu.ncsu.NetworkingProject.protocol.PQueryMessage;
-import edu.ncsu.NetworkingProject.protocol.PQueryResponseMessage;
-import edu.ncsu.NetworkingProject.protocol.ProtocolException;
-import edu.ncsu.NetworkingProject.protocol.RegisterMessage;
-import edu.ncsu.NetworkingProject.protocol.RegisterResponseMessage;
 
 class ConnectionHandler implements Runnable {
 
@@ -58,7 +56,7 @@ class ConnectionHandler implements Runnable {
         Connection connection = new Connection( connectionSocket );
 
         // Grab the incoming message
-        P2PMessage message = connection.waitForNextMessage();
+        P2PMessage message = (P2PMessage) connection.waitForNextCommunication();
 
         if ( message instanceof RegisterMessage ) {
             RegisterMessage request = (RegisterMessage) message;
@@ -95,7 +93,7 @@ class ConnectionHandler implements Runnable {
             }
 
             // Send response back to the peer
-            RegisterResponseMessage response = new RegisterResponseMessage( 100, "(Success)", currentCookie );
+            P2PResponse response = new P2PResponse(Status.SUCCESS, currentCookie);
             connection.send( response );
         }
         else if ( message instanceof LeaveMessage ) {
@@ -107,9 +105,8 @@ class ConnectionHandler implements Runnable {
                 }
             }
 
-            LeaveResponseMessage response = new LeaveResponseMessage( 100, "(Success)", request.getCookie() );
+            P2PResponse response = new P2PResponse(Status.SUCCESS, request.getCookie());
             connection.send( response );
-
         }
         else if ( message instanceof PQueryMessage ) {
             LinkedList<PeerList> activePeers = new LinkedList<PeerList>();
@@ -120,8 +117,8 @@ class ConnectionHandler implements Runnable {
                     activePeers.add( peer );
                 }
             }
-            
-            PQueryResponseMessage response = new PQueryResponseMessage(100, "(Success)", activePeers);
+
+            P2PResponse response = new P2PResponse(Status.SUCCESS, Utils.objectToByteArray(activePeers));
             connection.send( response );
         }
         else if ( message instanceof KeepAliveMessage ) {
@@ -132,8 +129,8 @@ class ConnectionHandler implements Runnable {
                     break;
                 }
             }
-            
-            KeepAliveResponseMessage response = new KeepAliveResponseMessage( 100, "(Success)", request.getCookie() );
+
+            P2PResponse response = new P2PResponse(Status.SUCCESS, request.getCookie());
             connection.send( response );
         }
         else {
