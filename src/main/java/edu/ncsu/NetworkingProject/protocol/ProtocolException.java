@@ -33,7 +33,7 @@ public abstract class ProtocolException extends RuntimeException {
     public static class UnexpectedMessageException extends ProtocolException {
 
         public UnexpectedMessageException(P2PMessage message) {
-            super("Unexpectedly recieved message of type " + message.getClass());
+            super("Unexpectedly received message of type " + message.getClass());
         }
 
     }

@@ -31,6 +31,15 @@ public class RegisterResponseMessage extends P2PMessage {
     }
 
     /**
+     * Get the cookie of this request
+     *
+     * @return the cookie
+     */
+    public int getCookie () {
+        return this.cookie;
+    }
+
+    /**
      * Register response has no data, always return null
      */
     @Override
