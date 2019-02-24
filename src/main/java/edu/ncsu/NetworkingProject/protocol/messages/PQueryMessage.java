@@ -1,4 +1,8 @@
-package edu.ncsu.NetworkingProject.protocol;
+package edu.ncsu.NetworkingProject.protocol.messages;
+
+import edu.ncsu.NetworkingProject.protocol.P2PHeader;
+import edu.ncsu.NetworkingProject.protocol.P2PMessage;
+import edu.ncsu.NetworkingProject.protocol.ProtocolException;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -17,7 +21,7 @@ public class PQueryMessage extends P2PMessage {
 
     /**
      * Construct the request message
-     * 
+     *
      * @param argument
      *            the argument(s) pertaining to the request method
      * @param headers
@@ -25,7 +29,7 @@ public class PQueryMessage extends P2PMessage {
      * @param data
      *            any data the request method may hold
      */
-    public PQueryMessage ( String argument, List<P2PHeader> headers, byte[] data ) {
+    public PQueryMessage (String argument, List<P2PHeader> headers) {
         if ( argument.isEmpty() )
             throw new ProtocolException.MissingArgumentException();
 
@@ -39,11 +43,6 @@ public class PQueryMessage extends P2PMessage {
 
     @Override
     protected void addHeaders ( LinkedList<P2PHeader> headers ) {
-    }
-
-    @Override
-    protected byte[] getMessageData () {
-        return null;
     }
 
 }

@@ -32,8 +32,16 @@ public abstract class ProtocolException extends RuntimeException {
 
     public static class UnexpectedMessageException extends ProtocolException {
 
-        public UnexpectedMessageException(P2PMessage message) {
+        public UnexpectedMessageException(P2PCommunication message) {
             super("Unexpectedly received message of type " + message.getClass());
+        }
+
+    }
+
+    public static class UnknownStatusException extends ProtocolException {
+
+        public UnknownStatusException(int status) {
+            super("Received an unknown status number " + status);
         }
 
     }

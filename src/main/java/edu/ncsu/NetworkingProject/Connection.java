@@ -1,6 +1,6 @@
 package edu.ncsu.NetworkingProject;
 
-import edu.ncsu.NetworkingProject.protocol.P2PMessage;
+import edu.ncsu.NetworkingProject.protocol.P2PCommunication;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -21,7 +21,7 @@ public class Connection {
         }
     }
 
-    public void send(P2PMessage message) {
+    public void send(P2PCommunication message) {
         byte[] data = message.toByteArray();
         try {
             output.writeInt(data.length);
@@ -31,13 +31,13 @@ public class Connection {
         }
     }
 
-    public P2PMessage waitForNextMessage() {
+    public P2PCommunication waitForNextCommunication() {
         try {
             int size = input.readInt();
             byte[] data = new byte[size];
             int sucBytes = input.read(data);
             if (sucBytes != size) throw new RuntimeException("Failed to read all bytes");
-            return P2PMessage.constructMessageFromBytes(data);
+            return P2PCommunication.constructCommunicationFromBytes(data);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read data", e);
         }
