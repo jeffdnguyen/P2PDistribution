@@ -12,7 +12,7 @@ public class P2PResponse extends P2PCommunication {
 
     private final Status status;
     private final List<P2PHeader> headers;
-    private final byte[] data;
+    private final byte[]          data;
 
     public P2PResponse(Status status, List<P2PHeader> headers, byte[] data) {
         this.status = status;
@@ -81,6 +81,10 @@ public class P2PResponse extends P2PCommunication {
         return output.toString();
     }
 
+    public List<P2PHeader> getHeaders () {
+        return headers;
+    }
+
     @Override
     public String toString() {
         return getTextComponent();
@@ -89,6 +93,7 @@ public class P2PResponse extends P2PCommunication {
     @Override
     public byte[] toByteArray() {
         byte[] textAsBytes = getTextComponent().getBytes();
+        // Add a 1 to identify this as a P2PResponse and add the length to help the receiver parse the buffer
         return ByteBuffer.allocate(5 + textAsBytes.length + data.length).put((byte)1).putInt(textAsBytes.length + data.length).put(textAsBytes).put(data).array();
     }
 

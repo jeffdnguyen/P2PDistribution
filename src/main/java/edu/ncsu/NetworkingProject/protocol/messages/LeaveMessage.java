@@ -22,7 +22,7 @@ public class LeaveMessage extends P2PMessage {
      */
     private int    cookie     = -1;
 
-    public LeaveMessage (String argument, List<P2PHeader> headers, byte[] data ) {
+    public LeaveMessage (String argument, List<P2PHeader> headers) {
         if ( argument.isEmpty() )
             throw new ProtocolException.MissingArgumentException();
 
@@ -36,7 +36,7 @@ public class LeaveMessage extends P2PMessage {
 
     /**
      * Get the cookie of this request
-     * 
+     *
      * @return the cookie
      */
     public int getCookie () {
@@ -45,7 +45,7 @@ public class LeaveMessage extends P2PMessage {
 
     /**
      * Get the server name of this request
-     * 
+     *
      * @return the server name
      */
     public String getServerName () {

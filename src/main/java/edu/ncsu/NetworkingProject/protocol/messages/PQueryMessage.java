@@ -21,7 +21,7 @@ public class PQueryMessage extends P2PMessage {
 
     /**
      * Construct the request message
-     * 
+     *
      * @param argument
      *            the argument(s) pertaining to the request method
      * @param headers
@@ -29,7 +29,7 @@ public class PQueryMessage extends P2PMessage {
      * @param data
      *            any data the request method may hold
      */
-    public PQueryMessage (String argument, List<P2PHeader> headers, byte[] data ) {
+    public PQueryMessage (String argument, List<P2PHeader> headers) {
         if ( argument.isEmpty() )
             throw new ProtocolException.MissingArgumentException();
 
