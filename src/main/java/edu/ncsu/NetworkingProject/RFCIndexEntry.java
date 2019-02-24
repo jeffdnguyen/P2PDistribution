@@ -1,6 +1,6 @@
 package edu.ncsu.NetworkingProject;
 
-import edu.ncsu.NetworkingProject.protocol.P2PMessage;
+import edu.ncsu.NetworkingProject.protocol.P2PCommunication;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -15,7 +15,7 @@ public class RFCIndexEntry implements Serializable {
     public RFCIndexEntry(int number, String title) {
         this.number = number;
         this.title = title;
-        this.hostname = P2PMessage.getHostname();
+        this.hostname = P2PCommunication.getHostname();
         this.ttl = new Date().getTime();
     }
 

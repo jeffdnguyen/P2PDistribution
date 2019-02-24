@@ -1,12 +1,9 @@
 package edu.ncsu.NetworkingProject.protocol;
 
 import edu.ncsu.NetworkingProject.Pair;
+import edu.ncsu.NetworkingProject.protocol.messages.*;
 
 import java.lang.reflect.InvocationTargetException;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -15,17 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class P2PMessage {
-
-    /**
-     * The current protocol version.
-     */
-    private final String VERSION = "1.0";
-
-    /**
-     * The name of the protocol.
-     */
-    private final String PROTOCOL_NAME = "P2P-DI";
+public abstract class P2PMessage extends P2PCommunication {
 
     /**
      * A list of all the message types and their classes.
@@ -50,16 +37,26 @@ public abstract class P2PMessage {
     static {
         registerMessageType("GetRFC", GetRFCMessage.class);
         registerMessageType("Register", RegisterMessage.class);
-        registerMessageType("RegisterResponse", RegisterResponseMessage.class);
         registerMessageType("Leave", LeaveMessage.class);
-        registerMessageType("LeaveResponse", LeaveResponseMessage.class);
         registerMessageType("PQuery", PQueryMessage.class);
-        registerMessageType("PQueryResponse", PQueryResponseMessage.class);
         registerMessageType("KeepAlive", PQueryMessage.class);
-        registerMessageType("KeepAliveResponse", PQueryResponseMessage.class);
         registerMessageType("RFCQuery", RFCQueryMessage.class);
-        registerMessageType("RFCResponse", RFCResponseMessage.class);
-        registerMessageType("RFCIndex", RFCIndexMessage.class);
+    }
+
+    private static P2PMessage findAndInvokeConstructorForMessage(String messageName, String argument, List<P2PHeader> headers) {
+        for (Pair<String, Class<? extends P2PMessage>> messageType : messageTypes) {
+            if (messageName.equals(messageType.first)) {
+                try {
+                    return messageType.second.getDeclaredConstructor(String.class, List.class).newInstance(argument, headers);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            }
+        }
+        throw new ProtocolException.NoSuchMessageType(messageName);
     }
 
     /**
@@ -68,11 +65,10 @@ public abstract class P2PMessage {
      * @param messageAsBytes the string representation.
      * @return the message object.
      */
-    public static P2PMessage constructMessageFromBytes(byte[] messageAsBytes) {
-        ByteBuffer buffer = ByteBuffer.wrap(messageAsBytes);
-        int headerLength = buffer.getInt();
-        buffer.limit(buffer.position() + headerLength);
-        String messageAsString = Charset.defaultCharset().decode(buffer).toString();
+    protected static P2PMessage constructMessageFromByteBuffer(ByteBuffer messageAsBytes) {
+        // Skip over the int (length) at the beginning before decoding
+        messageAsBytes.getInt();
+        String messageAsString = Charset.defaultCharset().decode(messageAsBytes).toString();
         String[] lines = messageAsString.split("\n");
         String[] firstLineTokens = lines[0].split(" ");
 
@@ -87,28 +83,7 @@ public abstract class P2PMessage {
                 .map(line -> new P2PHeader(line.substring(0, line.indexOf(":")), line.substring(line.indexOf(":") + 1)))
                 .collect(Collectors.toList());
 
-        buffer.limit(buffer.capacity());
-        byte[] data = new byte[buffer.capacity() - buffer.position()];
-        buffer.get(data, 0, data.length);
-
-        P2PMessage message = null;
-        for (Pair<String, Class<? extends P2PMessage>> messageType : messageTypes) {
-            if (firstLineTokens[0].equals(messageType.first)) {
-                try {
-                    message = messageType.second.getDeclaredConstructor(String.class, List.class, byte[].class).newInstance(argument.toString(), headers, data);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                } catch (NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
-                break;
-            }
-        }
-        if (message == null) {
-            throw new ProtocolException.NoSuchMessageType(firstLineTokens[0]);
-        }
-
-        return message;
+        return findAndInvokeConstructorForMessage(firstLineTokens[0], argument.toString(), headers);
     }
 
     /**
@@ -125,20 +100,6 @@ public abstract class P2PMessage {
      * @param headers the list of headers to be included in the message.
      */
     protected abstract void addHeaders(LinkedList<P2PHeader> headers);
-
-    /**
-     * @return Any data associated with the message. May be null.
-     */
-    protected abstract byte[] getMessageData();
-
-    public static String getHostname() {
-        try(final DatagramSocket socket = new DatagramSocket()){
-            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
-            return socket.getLocalAddress().getHostAddress();
-        } catch (SocketException | UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private String getTextComponent() {
         StringBuilder outputText = new StringBuilder();
@@ -161,31 +122,23 @@ public abstract class P2PMessage {
         outputText.append("\n");
 
         LinkedList<P2PHeader> headers = new LinkedList<>();
-        headers.add(new P2PHeader("Host", getHostname()));
         addHeaders(headers);
 
-        for (P2PHeader header : headers) {
-            outputText.append(header.name);
-            outputText.append(": ");
-            outputText.append(header.value);
-            outputText.append("\n");
-        }
+        appendHeaders(outputText, headers);
+
         return outputText.toString();
     }
 
+    @Override
     public byte[] toByteArray() {
-
         byte[] textAsBytes = getTextComponent().getBytes();
-        byte[] data = getMessageData();
-        if (data != null) {
-            return ByteBuffer.allocate(4 + textAsBytes.length + data.length).putInt(textAsBytes.length).put(textAsBytes).put(data).array();
-        } else {
-            return ByteBuffer.allocate(4 + textAsBytes.length).putInt(textAsBytes.length).put(textAsBytes).array();
-        }
+        // Add a 1 to identify this as a P2PMessage and add the length to help the receiver parse the buffer
+        return ByteBuffer.allocate(5 + textAsBytes.length).put((byte) 0).putInt(textAsBytes.length).put(textAsBytes).array();
     }
 
     @Override
     public String toString() {
         return getTextComponent();
     }
+
 }

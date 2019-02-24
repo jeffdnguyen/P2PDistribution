@@ -1,9 +1,13 @@
 package edu.ncsu.NetworkingProject;
 
-import edu.ncsu.NetworkingProject.protocol.*;
+import edu.ncsu.NetworkingProject.protocol.P2PMessage;
+import edu.ncsu.NetworkingProject.protocol.P2PResponse;
+import edu.ncsu.NetworkingProject.protocol.ProtocolException;
+import edu.ncsu.NetworkingProject.protocol.Status;
+import edu.ncsu.NetworkingProject.protocol.messages.GetRFCMessage;
+import edu.ncsu.NetworkingProject.protocol.messages.RFCQueryMessage;
 
-import java.io.EOFException;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -39,24 +43,36 @@ public class RFCPeerServer implements Runnable {
         while (true) {
             P2PMessage message;
             try {
-                message = connection.waitForNextMessage();
+                message = (P2PMessage) connection.waitForNextCommunication();
             } catch (RuntimeException e) {
                 if (!(e.getCause() instanceof EOFException)) throw e;
 
                 try {
                     connection = new Connection(socket.accept());
-                    message = connection.waitForNextMessage();
+                    message = (P2PMessage) connection.waitForNextCommunication();
                 } catch (IOException e1) {
                     throw new RuntimeException("Unable to set up new connection", e1);
                 }
             }
 
             if (message instanceof RFCQueryMessage) {
+                byte[] indexAsArray;
                 synchronized (rfcIndex) {
-                    connection.send(new RFCIndexMessage(rfcIndex));
+                    indexAsArray = Utils.objectToByteArray(rfcIndex);
                 }
+                connection.send(new P2PResponse(Status.SUCCESS, indexAsArray));
             } else if (message instanceof GetRFCMessage) {
-                connection.send(new RFCResponseMessage(((GetRFCMessage) message).getRFCID()));
+                byte[] rfcFileAsBytes;
+                try {
+                    FileInputStream fileIn = new FileInputStream(new File(Peer.rfcRoot, "rfc" + ((GetRFCMessage) message).getRFCID() + ".txt"));
+
+                    rfcFileAsBytes = fileIn.readAllBytes();
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException("File could not be found!", e);
+                } catch (IOException e) {
+                    throw new RuntimeException("Trouble reading file", e);
+                }
+                connection.send(new P2PResponse(Status.SUCCESS, rfcFileAsBytes));
             } else {
                 throw new ProtocolException.UnexpectedMessageException(message);
             }

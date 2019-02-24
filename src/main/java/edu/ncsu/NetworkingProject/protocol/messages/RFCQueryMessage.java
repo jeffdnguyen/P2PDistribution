@@ -1,4 +1,7 @@
-package edu.ncsu.NetworkingProject.protocol;
+package edu.ncsu.NetworkingProject.protocol.messages;
+
+import edu.ncsu.NetworkingProject.protocol.P2PHeader;
+import edu.ncsu.NetworkingProject.protocol.P2PMessage;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -6,7 +9,7 @@ import java.util.List;
 public class RFCQueryMessage extends P2PMessage {
 
     @SuppressWarnings("unused")
-    RFCQueryMessage(String argument, List<P2PHeader> headers, byte[] data) {  }
+    RFCQueryMessage(String argument, List<P2PHeader> headers) {  }
 
     public RFCQueryMessage() { }
 
@@ -17,10 +20,5 @@ public class RFCQueryMessage extends P2PMessage {
 
     @Override
     protected void addHeaders(LinkedList<P2PHeader> headers) { }
-
-    @Override
-    protected byte[] getMessageData() {
-        return null;
-    }
 
 }
