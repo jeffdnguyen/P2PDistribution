@@ -10,7 +10,6 @@ import edu.ncsu.NetworkingProject.protocol.messages.PQueryMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.RegisterMessage;
 
 import java.net.Socket;
-import java.time.LocalDateTime;
 import java.util.LinkedList;
 
 class ConnectionHandler implements Runnable {
@@ -33,7 +32,7 @@ class ConnectionHandler implements Runnable {
     /**
      * List of peers that are registered with the RegServer
      */
-    LinkedList<PeerListEntry> peerList = PeerListEntry.getPeerList();
+    PeerList peerList = PeerList.getINSTANCE();
 
     /**
      * Creates new thread to handle new connection at the passed in socket
@@ -80,7 +79,6 @@ class ConnectionHandler implements Runnable {
                 newPeer.setTTL( 7200 );
                 newPeer.setPortNumber( portNumber );
                 newPeer.setNumberOfTimesActive( 1 );
-                newPeer.setLastActive( LocalDateTime.now() );
 
                 synchronized ( peerList ) {
                     peerList.add( newPeer );

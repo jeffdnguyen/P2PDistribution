@@ -1,13 +1,8 @@
 package edu.ncsu.NetworkingProject;
 
-import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.io.Serializable;
 
-public class PeerListEntry {
-
-    private static LinkedList<PeerListEntry> peerList = new LinkedList<PeerListEntry>();
+public class PeerListEntry implements Serializable {
     
     private String        hostname;
 
@@ -15,20 +10,12 @@ public class PeerListEntry {
 
     private boolean       isActive;
 
-    private int           TTL;
-
     private int           portNumber;
 
     private int           numberOfTimesActive;
 
-    private LocalDateTime lastActive;
+    private long        willExpireTime;
 
-    private Timer         timer;
-    
-    public static LinkedList<PeerListEntry> getPeerList() {
-        return peerList;
-    }
-    
     public String getHostname () {
         return hostname;
     }
@@ -53,22 +40,12 @@ public class PeerListEntry {
         this.isActive = isActive;
     }
 
-    public int getTTL () {
-        return TTL;
+    public long getTTL () {
+        return willExpireTime;
     }
 
     public void setTTL ( final int TTL ) {
-        this.TTL = TTL;
-        if ( isActive )
-            decayTTL();
-    }
-
-    private void decayTTL () {
-        if ( timer != null ) {
-            timer.cancel();
-        }
-        timer = new Timer( true );
-        timer.schedule( new deactivatePeer(), getTTL() * 1000 );
+        this.willExpireTime = System.currentTimeMillis() + TTL;
     }
 
     public int getPortNumber () {
@@ -85,21 +62,6 @@ public class PeerListEntry {
 
     public void setNumberOfTimesActive ( final int numberOfTimesActive ) {
         this.numberOfTimesActive = numberOfTimesActive;
-    }
-
-    public LocalDateTime getLastActive () {
-        return lastActive;
-    }
-
-    public void setLastActive ( final LocalDateTime lastActive ) {
-        this.lastActive = lastActive;
-    }
-
-    class deactivatePeer extends TimerTask {
-        public void run () {
-            isActive = false;
-            System.out.println("Peer " + cookie + " set to 'inactive'");
-        }
     }
 
 }
