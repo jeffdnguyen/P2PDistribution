@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class RegServer {
+public class RegServer implements Runnable {
     public final static int REGSERVER_PORT = 65423;
 
     @SuppressWarnings ( "unused" )
-    public static void main ( String[] args ) {
+    public void run () {
         ServerSocket welcomeSocket;
         try {
             welcomeSocket = new ServerSocket( REGSERVER_PORT );

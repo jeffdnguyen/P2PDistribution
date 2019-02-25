@@ -21,6 +21,8 @@ public class RFCPeerClient implements Runnable {
     private int cookie;
     private final RFCIndex index;
     private final File rfcFolder;
+    public static final int RFCS_TO_DOWNLOAD = 60;
+    public static final int KEEP_ALIVE_TIMER = 60000;
 
     public RFCPeerClient(int portNumber, RFCIndex index) {
         this.portNumber = portNumber;
@@ -35,9 +37,9 @@ public class RFCPeerClient implements Runnable {
         conn.close();
 
         Timer timer = new Timer( true );
-        timer.schedule( new KeepAliveThread(this.cookie), 60000 );
+        timer.schedule( new KeepAliveThread(this.cookie), KEEP_ALIVE_TIMER );
 
-        while(rfcFolder.listFiles().length < 60) {
+        while(rfcFolder.listFiles().length < RFCS_TO_DOWNLOAD) {
             conn = openNewConnection(RegServer.REGSERVER_PORT);
             LinkedList<PeerListEntry> peerList = getPeerList(conn);
             conn.close();
@@ -165,7 +167,7 @@ public class RFCPeerClient implements Runnable {
             RFCIndex otherIndex = Utils.byteArrayToObject(pQueryResponse.getData());
             synchronized (index) {
                 index.mergeWith(otherIndex);
-                System.out.println(portNumber + ": Got the RFCIndex");
+                System.out.println(portNumber + ": Got an RFCIndex of size " + otherIndex.index.size());
             }
         } else {
             throw new UnexpectedMessageException(response);
