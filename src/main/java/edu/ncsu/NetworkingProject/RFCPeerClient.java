@@ -5,10 +5,7 @@ import edu.ncsu.NetworkingProject.protocol.P2PHeader;
 import edu.ncsu.NetworkingProject.protocol.P2PResponse;
 import edu.ncsu.NetworkingProject.protocol.ProtocolException.UnexpectedMessageException;
 import edu.ncsu.NetworkingProject.protocol.Status;
-import edu.ncsu.NetworkingProject.protocol.messages.KeepAliveMessage;
-import edu.ncsu.NetworkingProject.protocol.messages.LeaveMessage;
-import edu.ncsu.NetworkingProject.protocol.messages.PQueryMessage;
-import edu.ncsu.NetworkingProject.protocol.messages.RegisterMessage;
+import edu.ncsu.NetworkingProject.protocol.messages.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -55,11 +52,11 @@ public class RFCPeerClient implements Runnable {
 
         for(PeerList peer : peerList) {
             conn = openNewConnection(peer.getPortNumber());
-            RFCIndex otherIndex = getRFCIndex(conn);
+            getRFCIndex(conn);
             conn.close();
 
             conn = openNewConnection(peer.getPortNumber());
-            downloadRFCs(conn, otherIndex);
+            downloadRFCs(conn);
             conn.close();
         }
         conn = openNewConnection(RegServer.REGSERVER_PORT);
@@ -148,17 +145,30 @@ public class RFCPeerClient implements Runnable {
         }
     }
 
-    private void downloadRFCs (Connection conn, RFCIndex otherIndex) {
+    private void getRFCIndex (Connection conn) {
+        RFCQueryMessage message = new RFCQueryMessage(
+                "RFCPeerServer",
+                new ArrayList<>()
+        );
+        conn.send(message);
+        P2PCommunication response = conn.waitForNextCommunication();
+        if ( response instanceof P2PResponse ) {
+            P2PResponse pQueryResponse = (P2PResponse) response;
+            RFCIndex otherIndex = Utils.byteArrayToObject(pQueryResponse.getData());
+            synchronized (index) {
+                index.mergeWith(otherIndex);
+                System.out.println(portNumber + ": Got the RFCIndex");
+            }
+        } else {
+            throw new UnexpectedMessageException(response);
+        }
+    }
+
+    private void downloadRFCs (Connection conn) {
         // TODO
     }
 
-    private RFCIndex getRFCIndex (Connection conn) {
-        // TODO
-        synchronized (index) {
-            System.out.println(portNumber + ": Got the RFCIndex");
-        }
-        return null;
-    }
+
 
     private void leaveRegServer (Connection conn) {
         LeaveMessage message = new LeaveMessage(
