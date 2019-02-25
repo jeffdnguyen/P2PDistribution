@@ -39,7 +39,7 @@ public abstract class P2PMessage extends P2PCommunication {
         registerMessageType("Register", RegisterMessage.class);
         registerMessageType("Leave", LeaveMessage.class);
         registerMessageType("PQuery", PQueryMessage.class);
-        registerMessageType("KeepAlive", PQueryMessage.class);
+        registerMessageType("KeepAlive", KeepAliveMessage.class);
         registerMessageType("RFCQuery", RFCQueryMessage.class);
     }
 

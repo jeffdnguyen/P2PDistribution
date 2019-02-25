@@ -5,6 +5,7 @@ import edu.ncsu.NetworkingProject.protocol.P2PHeader;
 import edu.ncsu.NetworkingProject.protocol.P2PResponse;
 import edu.ncsu.NetworkingProject.protocol.ProtocolException.UnexpectedMessageException;
 import edu.ncsu.NetworkingProject.protocol.Status;
+import edu.ncsu.NetworkingProject.protocol.messages.KeepAliveMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.LeaveMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.PQueryMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.RegisterMessage;
@@ -44,7 +45,7 @@ public class RFCPeerClient implements Runnable {
             keepAlive(conn);
             conn.close();
 
-            try { Thread.sleep(1000); }
+            try { Thread.sleep(3000); }
             catch (InterruptedException e) { Thread.currentThread().interrupt(); }
 
             conn = openNewConnection(RegServer.REGSERVER_PORT);
@@ -64,10 +65,6 @@ public class RFCPeerClient implements Runnable {
         conn = openNewConnection(RegServer.REGSERVER_PORT);
         leaveRegServer(conn);
         conn.close();
-    }
-
-    private void keepAlive (Connection conn) {
-
     }
 
     /**
@@ -107,6 +104,29 @@ public class RFCPeerClient implements Runnable {
             throw new UnexpectedMessageException(response);
         }
         System.out.println(portNumber + ": Registered with RegServer");
+    }
+
+    /**
+     * Make sure the RegServer doesn't mark the current Peer as inactive
+     */
+    private void keepAlive (Connection conn) {
+        KeepAliveMessage message = new KeepAliveMessage(
+                "RegServer",
+                new ArrayList<>( List.of(new P2PHeader("Cookie", Integer.toString(this.cookie))) )
+        );
+        conn.send(message);
+        P2PCommunication response = conn.waitForNextCommunication();
+        if ( response instanceof P2PResponse) {
+            P2PResponse leaveResponse = (P2PResponse) response;
+            if (!leaveResponse.getStatus().equals(Status.SUCCESS)) {
+                System.out.println("Failed to send KeepAlive. Retrying...");
+                try { Thread.sleep(1000); }
+                catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+                keepAlive(conn);
+            }
+        } else {
+            throw new UnexpectedMessageException(response);
+        }
     }
 
     /**

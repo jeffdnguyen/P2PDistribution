@@ -91,6 +91,7 @@ public class PeerList {
     class deactivatePeer extends TimerTask {
         public void run () {
             isActive = false;
+            System.out.println("Peer " + cookie + " set to 'inactive'");
         }
     }
 
