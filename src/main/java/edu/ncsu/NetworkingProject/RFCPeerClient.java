@@ -35,7 +35,7 @@ public class RFCPeerClient implements Runnable {
         conn.close();
 
         Timer timer = new Timer( true );
-        timer.schedule( new KeepAliveThread(this.cookie), 6000 );
+        timer.schedule( new KeepAliveThread(this.cookie), 60000 );
 
         while(rfcFolder.listFiles().length < 60) {
             conn = openNewConnection(RegServer.REGSERVER_PORT);
