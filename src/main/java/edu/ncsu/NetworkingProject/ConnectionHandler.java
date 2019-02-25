@@ -10,7 +10,6 @@ import edu.ncsu.NetworkingProject.protocol.messages.PQueryMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.RegisterMessage;
 
 import java.net.Socket;
-import java.util.LinkedList;
 
 class ConnectionHandler implements Runnable {
 
@@ -87,14 +86,16 @@ class ConnectionHandler implements Runnable {
             else {
                 // Find the existing peer and update it
                 synchronized ( peerList ) {
-                    for ( PeerListEntry peer : peerList ) {
-                        if ( peer.getCookie() == currentCookie ) {
+                    int finalCurrentCookie = currentCookie;
+                    peerList.forEach(peer -> {
+                        if ( peer.getCookie() == finalCurrentCookie) {
                             peer.setActive( true );
                             peer.setTTL( 7200 );
                             peer.setNumberOfTimesActive( peer.getNumberOfTimesActive() + 1 );
-                            break;
+                            return false;
                         }
-                    }
+                        return true;
+                    });
                 }
             }
 
@@ -106,12 +107,13 @@ class ConnectionHandler implements Runnable {
         else if ( message instanceof LeaveMessage ) {
             LeaveMessage request = (LeaveMessage) message;
             synchronized ( peerList ) {
-                for ( PeerListEntry peer : peerList ) {
+                peerList.forEach(peer -> {
                     if ( peer.getCookie() == request.getCookie() ) {
                         peer.setTTL( 0 );
-                        break;
+                        return false;
                     }
-                }
+                    return true;
+                });
             }
 
             P2PResponse response = new P2PResponse( Status.SUCCESS, request.getCookie() );
@@ -119,29 +121,24 @@ class ConnectionHandler implements Runnable {
             System.out.println( "LeaveMessage received from peer " + request.getCookie() );
         }
         else if ( message instanceof PQueryMessage ) {
-            LinkedList<PeerListEntry> activePeers = new LinkedList<PeerListEntry>();
-            synchronized ( peerList ) {
-                for ( PeerListEntry peer : peerList ) {
-                    // Only add active peers to the list
-                    if ( peer.isActive() ) {
-                        activePeers.add( peer );
-                    }
-                }
+            P2PResponse response;
+            synchronized (peerList) {
+                peerList.cleanList();
+                response = new P2PResponse( Status.SUCCESS, Utils.objectToByteArray( peerList ) );
             }
-
-            P2PResponse response = new P2PResponse( Status.SUCCESS, Utils.objectToByteArray( activePeers ) );
             connection.send( response );
             System.out.println( "PQueryMessage received" );
         }
         else if ( message instanceof KeepAliveMessage ) {
             KeepAliveMessage request = (KeepAliveMessage) message;
             synchronized ( peerList ) {
-                for ( PeerListEntry peer : peerList ) {
+                peerList.forEach(peer -> {
                     if ( peer.getCookie() == request.getCookie() ) {
                         peer.setTTL( 7200 );
-                        break;
+                        return false;
                     }
-                }
+                    return true;
+                });
             }
 
             P2PResponse response = new P2PResponse( Status.SUCCESS, request.getCookie() );

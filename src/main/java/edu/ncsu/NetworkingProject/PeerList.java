@@ -1,10 +1,13 @@
 package edu.ncsu.NetworkingProject;
 
 import java.util.LinkedList;
+import java.util.function.Predicate;
 
-public class PeerList extends LinkedList<PeerListEntry> {
+public class PeerList {
 
     private static PeerList INSTANCE = new PeerList();
+
+    private LinkedList<PeerListEntry> backingList = new LinkedList<>();
 
     private PeerList() {}
 
@@ -12,9 +15,20 @@ public class PeerList extends LinkedList<PeerListEntry> {
         return INSTANCE;
     }
 
-    @Override
-    public PeerListEntry get(int index) {
-        if (super.get(index).getTTL() >= System.currentTimeMillis()) this.remove(index);
-        return super.get(index);
+    public void add(PeerListEntry entry) {
+        backingList.add(entry);
     }
+
+    public void cleanList() {
+        backingList.removeIf(entry -> entry.getTTL() >= System.currentTimeMillis());
+    }
+
+    public void forEach(Predicate<? super PeerListEntry> loop) {
+        cleanList();
+
+        for (PeerListEntry entry : backingList) {
+            if (!loop.test(entry)) break;
+        }
+    }
+
 }
