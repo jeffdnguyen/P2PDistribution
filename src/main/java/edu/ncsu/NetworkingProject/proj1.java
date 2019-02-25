@@ -7,23 +7,14 @@ import java.io.InputStreamReader;
 class proj1 {
 
     public static void main(String[] args) {
-        System.out.println("Which service would you like to run?");
-        System.out.println("1) Registration Server");
-        System.out.println("2) Peer(s)");
+        Thread regServer = new Thread(new RegServer());
+        regServer.start();
+        System.out.println("Registration server started successfully.");
+        System.out.println("How many peers do you wish to run?");
         int response = getInt();
-
-        if (response == 1) {
-            RegServer.main(new String[0]);
-        } else if (response == 2) {
-            System.out.println("How many peers do you wish to run?");
-            response = getInt();
-            for (int i = 0; i < response; i++) {
-                // Pass the peer a unique port number
-                Peer.main(new String[] { Integer.toString(8000 + i) });
-            }
-        } else {
-            System.out.println("Please enter 1 or 2");
-            System.exit(-1);
+        for (int i = 0; i < response; i++) {
+            // Pass the peer a unique port number
+            Peer.main(new String[] { Integer.toString(8000 + i) });
         }
     }
 
