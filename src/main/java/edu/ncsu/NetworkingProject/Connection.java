@@ -38,8 +38,10 @@ public class Connection {
         try {
             int size = input.readInt();
             byte[] data = new byte[size];
-            int sucBytes = input.read(data);
-            if (sucBytes != size) throw new RuntimeException("Failed to read all bytes");
+            int sucBytes = 0;
+            do {
+                sucBytes += input.read(data, sucBytes, size - sucBytes);
+            } while (sucBytes != size);
             return P2PCommunication.constructCommunicationFromBytes(data);
         } catch (EOFException e) {
             return null;

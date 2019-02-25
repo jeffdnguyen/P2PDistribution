@@ -27,7 +27,7 @@ public class RFCPeerClient implements Runnable {
     public RFCPeerClient(int portNumber, RFCIndex index) {
         this.portNumber = portNumber;
         this.index = index;
-        this.rfcFolder = new File("./rfcs/" + portNumber);
+        this.rfcFolder = new File("./rfcs/" + portNumber + "/");
         this.rfcFolder.mkdir();
     }
 
@@ -52,7 +52,7 @@ public class RFCPeerClient implements Runnable {
 
             synchronized (index) {
                 for (RFCIndexEntry entry : index.index) {
-                    if (!entry.getHostname().equals(P2PCommunication.getHostname()) && entry.getPort() != portNumber) {
+                    if (!entry.getHostname().equals(P2PCommunication.getHostname()) || entry.getPort() != portNumber) {
                         conn = openNewConnection(entry.getPort());
                         downloadRFC(conn, entry);
                         conn.close();
@@ -188,9 +188,11 @@ public class RFCPeerClient implements Runnable {
             } else {
                 try {
                     OutputStream out = new BufferedOutputStream(
-                            new FileOutputStream(rfcFolder.getPath() + "rfc" + entry.getNumber() + ".txt")
+                            new FileOutputStream(rfcFolder.getPath() + "/rfc" + entry.getNumber() + ".txt")
                     );
                     out.write(rfcResponse.getData());
+                    out.close();
+                    System.out.println("Successfully downloaded RFC " + entry.getNumber());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
