@@ -1,7 +1,11 @@
 package edu.ncsu.NetworkingProject;
 
-import edu.ncsu.NetworkingProject.protocol.*;
+import edu.ncsu.NetworkingProject.protocol.P2PCommunication;
+import edu.ncsu.NetworkingProject.protocol.P2PHeader;
+import edu.ncsu.NetworkingProject.protocol.P2PResponse;
 import edu.ncsu.NetworkingProject.protocol.ProtocolException.UnexpectedMessageException;
+import edu.ncsu.NetworkingProject.protocol.messages.PQueryMessage;
+import edu.ncsu.NetworkingProject.protocol.messages.RegisterMessage;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -9,6 +13,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The part of the Peer that registers with the RegServer,
@@ -28,6 +33,7 @@ public class RFCPeerClient implements Runnable {
     @Override public void run () {
         openNewConnection(RegServer.REGSERVER_PORT);
         registerWithRegServer();
+        openNewConnection(RegServer.REGSERVER_PORT);
         LinkedList<PeerList> peerList = getPeerList();
         for(PeerList peer : peerList) {
             openNewConnection(peer.getPortNumber());
@@ -47,11 +53,8 @@ public class RFCPeerClient implements Runnable {
         try {
             Socket socket = new Socket(
                     InetAddress.getLocalHost(),
-                    remotePort,
-                    InetAddress.getLocalHost(),
-                    portNumber
+                    remotePort
             );
-            socket.setKeepAlive(true);
             this.conn = new Connection(socket);
         }
         catch ( IOException e ) {
@@ -66,15 +69,19 @@ public class RFCPeerClient implements Runnable {
      */
     private void registerWithRegServer () {
         RegisterMessage message = new RegisterMessage(
-                "Register PORT " + portNumber,
-                new ArrayList<>(),
-                new byte[0]
+                "PORT " + portNumber,
+                new ArrayList<>()
         );
         conn.send(message);
-        P2PMessage response = conn.waitForNextMessage();
-        if ( response instanceof RegisterResponseMessage ) {
-            RegisterResponseMessage registerResponse = (RegisterResponseMessage) response;
-            this.cookie = registerResponse.getCookie();
+        P2PCommunication response = conn.waitForNextCommunication();
+        if ( response instanceof P2PResponse) {
+            P2PResponse registerResponse = (P2PResponse) response;
+            P2PHeader cookieHeader = registerResponse.getHeaders()
+                    .stream()
+                    .filter(header -> header.name.equals("Cookie"))
+                    .findFirst()
+                    .orElseThrow();
+            this.cookie = Integer.parseInt(cookieHeader.value);
         } else {
             throw new UnexpectedMessageException(response);
         }
@@ -87,16 +94,14 @@ public class RFCPeerClient implements Runnable {
      */
     private LinkedList<PeerList> getPeerList() {
         PQueryMessage message = new PQueryMessage(
-                "PQuery activePeerList",
-                Collections.singletonList(new P2PHeader("Cookie", Integer.toString(this.cookie))),
-                new byte[0]
+                "activePeerList",
+                new ArrayList<>( List.of(new P2PHeader("Cookie", Integer.toString(this.cookie))) )
         );
         conn.send(message);
-        P2PMessage response = conn.waitForNextMessage();
-        // TODO: get a P2PResponse, convert the data into a list of peers, and return it
-        if ( response instanceof PQueryResponseMessage ) {
-            PQueryResponseMessage pQueryResponse = (PQueryResponseMessage) response;
-            return new LinkedList<PeerList>();
+        P2PCommunication response = conn.waitForNextCommunication();
+        if ( response instanceof P2PResponse ) {
+            P2PResponse pQueryResponse = (P2PResponse) response;
+            return Utils.byteArrayToObject(pQueryResponse.toByteArray());
         } else {
             throw new UnexpectedMessageException(response);
         }

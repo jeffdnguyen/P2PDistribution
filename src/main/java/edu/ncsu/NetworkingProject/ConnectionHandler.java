@@ -38,7 +38,7 @@ class ConnectionHandler implements Runnable {
 
     /**
      * Creates new thread to handle new connection at the passed in socket
-     * 
+     *
      * @param socket
      *            the socket with the new connection
      */
@@ -63,7 +63,7 @@ class ConnectionHandler implements Runnable {
 
             int portNumber = request.getPortNumber();
             int currentCookie = request.getCookie();
-            
+
             // If cookie is -1, then this is a new peer
             if ( currentCookie == -1 ) {
                 PeerList newPeer = new PeerList();
@@ -95,6 +95,7 @@ class ConnectionHandler implements Runnable {
             // Send response back to the peer
             P2PResponse response = new P2PResponse(Status.SUCCESS, currentCookie);
             connection.send( response );
+            System.out.println("Registered a new peer with port " + portNumber + " and cookie " + cookie);
         }
         else if ( message instanceof LeaveMessage ) {
             LeaveMessage request = (LeaveMessage) message;
@@ -110,7 +111,7 @@ class ConnectionHandler implements Runnable {
         }
         else if ( message instanceof PQueryMessage ) {
             LinkedList<PeerList> activePeers = new LinkedList<PeerList>();
-            
+
             for ( PeerList peer : peerList ) {
                 // Only add active peers to the list
                 if (peer.isActive()) {

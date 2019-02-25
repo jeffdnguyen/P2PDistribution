@@ -37,19 +37,19 @@ public class RegisterMessage extends P2PMessage {
      *            the argument(s) pertaining to the request method
      * @param headers
      *            list of headers associated with the request method
-     * @param data
-     *            any data the request method may hold
      */
     public RegisterMessage (String argument, List<P2PHeader> headers) {
         if ( argument.isEmpty() )
             throw new ProtocolException.MissingArgumentException();
 
-        // Grab port number from argument: "Register PORT 111111"
-        portNumber = Integer.parseInt( argument.split( " " )[2] );
+        // Grab port number from argument: "PORT 111111"
+        portNumber = Integer.parseInt( argument.split( " " )[1] );
 
         // Grab cookie from request if he has registered already in the past
-        if ( headers.size() > 1 )
-            cookie = Integer.parseInt( headers.get( 1 ).value );
+        headers.stream()
+                .filter(header -> header.name.equals("Cookie"))
+                .findFirst()
+                .ifPresent(cookieHeader -> this.cookie = Integer.parseInt(cookieHeader.value));
     }
 
     /**

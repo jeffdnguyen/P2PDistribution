@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 public class P2PResponse extends P2PCommunication {
 
     private final Status status;
+    /** Note: headers must be a mutable list so P2PCommunication can add the host header */
     private final List<P2PHeader> headers;
     private final byte[]          data;
 
@@ -22,7 +23,8 @@ public class P2PResponse extends P2PCommunication {
 
     public P2PResponse(Status status, int cookie, byte[] data) {
         this.status = status;
-        this.headers = Collections.singletonList(new P2PHeader("cookie", String.valueOf(cookie)));
+        this.headers = new ArrayList<>();
+        this.headers.add( new P2PHeader("Cookie", String.valueOf(cookie)) );
         this.data = data;
     }
 
@@ -34,7 +36,8 @@ public class P2PResponse extends P2PCommunication {
 
     public P2PResponse(Status status, int cookie) {
         this.status = status;
-        this.headers = Collections.singletonList(new P2PHeader("cookie", String.valueOf(cookie)));
+        this.headers = new ArrayList<>();
+        this.headers.add( new P2PHeader("Cookie", String.valueOf(cookie)) );
         this.data = new byte[0];
     }
 
@@ -48,7 +51,8 @@ public class P2PResponse extends P2PCommunication {
         Status status = Status.findByCode(Integer.parseInt(firstLineTokens[1]));
 
         StringBuilder statusPhrase = new StringBuilder();
-        for (int i = 1; i < firstLineTokens.length; i++) {
+        // Skip the version and the code to get just the phrase
+        for (int i = 2; i < firstLineTokens.length; i++) {
             if (!statusPhrase.toString().isEmpty()) statusPhrase.append(" ");
             statusPhrase.append(firstLineTokens[i]);
         }
@@ -57,7 +61,7 @@ public class P2PResponse extends P2PCommunication {
 
         List<P2PHeader> headers = Arrays.stream(lines)
                 .skip(1)
-                .map(line -> new P2PHeader(line.substring(0, line.indexOf(":")), line.substring(line.indexOf(":") + 1)))
+                .map(line -> new P2PHeader(line.substring(0, line.indexOf(":")), line.substring(line.indexOf(":") + 2)))
                 .collect(Collectors.toList());
 
         responseAsBytes.limit(responseAsBytes.capacity());
