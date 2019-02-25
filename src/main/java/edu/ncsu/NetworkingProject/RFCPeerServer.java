@@ -50,6 +50,8 @@ public class RFCPeerServer implements Runnable {
 
     @Override
     public void run() {
+        // TODO: The RFCPeerServer needs to spawn new threads for each connection
+        // (since many peers should be able to connect at the same time)
         Connection connection = waitForNewConnection();
 
         while (true) {

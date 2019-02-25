@@ -48,11 +48,13 @@ public class RFCPeerClient implements Runnable {
                 conn.close();
             }
 
-            for (RFCIndexEntry entry : index.index) {
-                if (!entry.getHostname().equals(P2PCommunication.getHostname()) && entry.getPort() != portNumber) {
-                    conn = openNewConnection(entry.getPort());
-                    downloadRFC(conn, entry);
-                    conn.close();
+            synchronized (index) {
+                for (RFCIndexEntry entry : index.index) {
+                    if (!entry.getHostname().equals(P2PCommunication.getHostname()) && entry.getPort() != portNumber) {
+                        conn = openNewConnection(entry.getPort());
+                        downloadRFC(conn, entry);
+                        conn.close();
+                    }
                 }
             }
         }
@@ -187,8 +189,6 @@ public class RFCPeerClient implements Runnable {
             throw new UnexpectedMessageException(response);
         }
     }
-
-
 
     private void leaveRegServer(Connection conn) {
         LeaveMessage message = new LeaveMessage(
