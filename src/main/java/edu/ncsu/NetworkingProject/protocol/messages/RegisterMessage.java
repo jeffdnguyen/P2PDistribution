@@ -1,11 +1,13 @@
 package edu.ncsu.NetworkingProject.protocol.messages;
 
+import edu.ncsu.NetworkingProject.Utils;
 import edu.ncsu.NetworkingProject.protocol.P2PHeader;
 import edu.ncsu.NetworkingProject.protocol.P2PMessage;
 import edu.ncsu.NetworkingProject.protocol.ProtocolException;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Object that represents Register request message
@@ -37,19 +39,20 @@ public class RegisterMessage extends P2PMessage {
      *            the argument(s) pertaining to the request method
      * @param headers
      *            list of headers associated with the request method
-     * @param data
-     *            any data the request method may hold
      */
     public RegisterMessage (String argument, List<P2PHeader> headers) {
         if ( argument.isEmpty() )
             throw new ProtocolException.MissingArgumentException();
 
-        // Grab port number from argument: "Register PORT 111111"
-        portNumber = Integer.parseInt( argument.split( " " )[2] );
+        // Grab port number from argument: "PORT 111111"
+        portNumber = Integer.parseInt( argument.split( " " )[1] );
 
         // Grab cookie from request if he has registered already in the past
-        if ( headers.size() > 1 )
-            cookie = Integer.parseInt( headers.get( 1 ).value );
+        try {
+            cookie = Utils.getCookieFromHeaders(headers);
+        } catch (NoSuchElementException e) {
+            // Leave it as -1
+        }
     }
 
     /**

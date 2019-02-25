@@ -39,7 +39,7 @@ public abstract class P2PMessage extends P2PCommunication {
         registerMessageType("Register", RegisterMessage.class);
         registerMessageType("Leave", LeaveMessage.class);
         registerMessageType("PQuery", PQueryMessage.class);
-        registerMessageType("KeepAlive", PQueryMessage.class);
+        registerMessageType("KeepAlive", KeepAliveMessage.class);
         registerMessageType("RFCQuery", RFCQueryMessage.class);
     }
 
@@ -66,8 +66,6 @@ public abstract class P2PMessage extends P2PCommunication {
      * @return the message object.
      */
     protected static P2PMessage constructMessageFromByteBuffer(ByteBuffer messageAsBytes) {
-        // Skip over the int (length) at the beginning before decoding
-        messageAsBytes.getInt();
         String messageAsString = Charset.defaultCharset().decode(messageAsBytes).toString();
         String[] lines = messageAsString.split("\n");
         String[] firstLineTokens = lines[0].split(" ");
@@ -80,7 +78,7 @@ public abstract class P2PMessage extends P2PCommunication {
 
         List<P2PHeader> headers = Arrays.stream(lines)
                 .skip(1)
-                .map(line -> new P2PHeader(line.substring(0, line.indexOf(":")), line.substring(line.indexOf(":") + 1)))
+                .map(line -> new P2PHeader(line.substring(0, line.indexOf(":")), line.substring(line.indexOf(":") + 2)))
                 .collect(Collectors.toList());
 
         return findAndInvokeConstructorForMessage(firstLineTokens[0], argument.toString(), headers);
@@ -132,8 +130,8 @@ public abstract class P2PMessage extends P2PCommunication {
     @Override
     public byte[] toByteArray() {
         byte[] textAsBytes = getTextComponent().getBytes();
-        // Add a 1 to identify this as a P2PMessage and add the length to help the receiver parse the buffer
-        return ByteBuffer.allocate(5 + textAsBytes.length).put((byte) 0).putInt(textAsBytes.length).put(textAsBytes).array();
+        // Add a 0 to identify this as a P2PMessage
+        return ByteBuffer.allocate(1 + textAsBytes.length).put((byte) 0).put(textAsBytes).array();
     }
 
     @Override

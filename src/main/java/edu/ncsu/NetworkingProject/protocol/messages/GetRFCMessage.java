@@ -11,8 +11,11 @@ public class GetRFCMessage extends P2PMessage {
 
     private int RFCID;
 
-    @SuppressWarnings("unused")
-    GetRFCMessage(String argument, List<P2PHeader> headers) {
+    // The GetRFCMessage should look like the following:
+    //
+    // GetRFC RFC 1234 P2P-DI/1.0
+    // Host: somehost.csc.ncsu.edu
+    public GetRFCMessage(String argument, List<P2PHeader> headers) {
         if (argument.isEmpty()) throw new ProtocolException.MissingArgumentException();
 
         RFCID = Integer.parseInt(argument.split(" ")[1]);

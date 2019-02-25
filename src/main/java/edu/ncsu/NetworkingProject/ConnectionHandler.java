@@ -9,7 +9,6 @@ import edu.ncsu.NetworkingProject.protocol.messages.LeaveMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.PQueryMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.RegisterMessage;
 
-import java.io.IOException;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -33,12 +32,14 @@ class ConnectionHandler implements Runnable {
 
     /**
      * List of peers that are registered with the RegServer
+     * TODO: This list is always empty since each thread creates a new peerList.
+     * Should be created in RegServer, passed in, and put in synchronized blocks.
      */
     LinkedList<PeerList> peerList = new LinkedList<PeerList>();
 
     /**
      * Creates new thread to handle new connection at the passed in socket
-     * 
+     *
      * @param socket
      *            the socket with the new connection
      */
@@ -57,13 +58,18 @@ class ConnectionHandler implements Runnable {
 
         // Grab the incoming message
         P2PMessage message = (P2PMessage) connection.waitForNextCommunication();
+        if (message == null) {
+            // The peer closed their end of the connection
+            connection.close();
+            return;
+        }
 
         if ( message instanceof RegisterMessage ) {
             RegisterMessage request = (RegisterMessage) message;
 
             int portNumber = request.getPortNumber();
             int currentCookie = request.getCookie();
-            
+
             // If cookie is -1, then this is a new peer
             if ( currentCookie == -1 ) {
                 PeerList newPeer = new PeerList();
@@ -95,6 +101,7 @@ class ConnectionHandler implements Runnable {
             // Send response back to the peer
             P2PResponse response = new P2PResponse(Status.SUCCESS, currentCookie);
             connection.send( response );
+            System.out.println("Registered a new peer with port " + portNumber + " and cookie " + cookie);
         }
         else if ( message instanceof LeaveMessage ) {
             LeaveMessage request = (LeaveMessage) message;
@@ -107,10 +114,11 @@ class ConnectionHandler implements Runnable {
 
             P2PResponse response = new P2PResponse(Status.SUCCESS, request.getCookie());
             connection.send( response );
+            System.out.println("LeaveMessage received from peer " + request.getCookie());
         }
         else if ( message instanceof PQueryMessage ) {
             LinkedList<PeerList> activePeers = new LinkedList<PeerList>();
-            
+
             for ( PeerList peer : peerList ) {
                 // Only add active peers to the list
                 if (peer.isActive()) {
@@ -120,6 +128,7 @@ class ConnectionHandler implements Runnable {
 
             P2PResponse response = new P2PResponse(Status.SUCCESS, Utils.objectToByteArray(activePeers));
             connection.send( response );
+            System.out.println("PQueryMessage received");
         }
         else if ( message instanceof KeepAliveMessage ) {
             KeepAliveMessage request = (KeepAliveMessage) message;
@@ -132,16 +141,12 @@ class ConnectionHandler implements Runnable {
 
             P2PResponse response = new P2PResponse(Status.SUCCESS, request.getCookie());
             connection.send( response );
+            System.out.println("KeepAliveMessage received from peer " + request.getCookie());
         }
         else {
             throw new ProtocolException.NoSuchMessageType(message.getClass().toString());
         }
         // Close TCP connection
-        try {
-            connectionSocket.close();
-        }
-        catch ( IOException e ) {
-            e.printStackTrace();
-        }
+        connection.close();
     }
 }

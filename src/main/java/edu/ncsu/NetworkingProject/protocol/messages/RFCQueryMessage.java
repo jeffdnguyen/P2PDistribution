@@ -8,8 +8,11 @@ import java.util.List;
 
 public class RFCQueryMessage extends P2PMessage {
 
-    @SuppressWarnings("unused")
-    RFCQueryMessage(String argument, List<P2PHeader> headers) {  }
+    // The RFCQueryMessage should look like the following:
+    //
+    // RFCQuery RFCPeerServer P2P-DI/1.0
+    // Host: somehost.csc.ncsu.edu
+    public RFCQueryMessage(String argument, List<P2PHeader> headers) {  }
 
     public RFCQueryMessage() { }
 

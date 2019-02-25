@@ -1,5 +1,6 @@
 package edu.ncsu.NetworkingProject.protocol.messages;
 
+import edu.ncsu.NetworkingProject.Utils;
 import edu.ncsu.NetworkingProject.protocol.P2PHeader;
 import edu.ncsu.NetworkingProject.protocol.P2PMessage;
 import edu.ncsu.NetworkingProject.protocol.ProtocolException;
@@ -30,8 +31,7 @@ public class KeepAliveMessage extends P2PMessage {
         serverName = argument;
 
         // Grab cookie from request
-        if ( headers.size() > 1 )
-            cookie = Integer.parseInt( headers.get( 1 ).value );
+        cookie = Utils.getCookieFromHeaders(headers);
     }
 
     /**
