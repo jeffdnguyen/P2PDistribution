@@ -24,14 +24,9 @@ class ConnectionHandler implements Runnable {
     Thread               clientThread;
 
     /**
-     * Unique cookie of the peer currently connected
-     */
-    int                  cookie   = 0;
-
-    /**
      * List of peers that are registered with the RegServer
      */
-    PeerList peerList = PeerList.getINSTANCE();
+    static final PeerList peerList = PeerList.getINSTANCE();
 
     /**
      * Creates new thread to handle new connection at the passed in socket
@@ -69,25 +64,25 @@ class ConnectionHandler implements Runnable {
             // If cookie is -1, then this is a new peer
             if ( currentCookie == -1 ) {
                 PeerListEntry newPeer = new PeerListEntry();
-                cookie += 1;
-                currentCookie = cookie;
 
                 newPeer.setHostname( connectionSocket.getInetAddress().getHostName() );
-                newPeer.setCookie( currentCookie );
                 newPeer.setActive( true );
                 newPeer.setTTL( 7200 );
                 newPeer.setPortNumber( portNumber );
                 newPeer.setNumberOfTimesActive( 1 );
 
                 synchronized ( peerList ) {
+                    currentCookie = peerList.getCopy().size();
+                    newPeer.setCookie(currentCookie);
                     peerList.add( newPeer );
+                    System.out.println( "Registered a new peer with port " + portNumber + " and cookie " + currentCookie );
                 }
             }
             else {
                 // Find the existing peer and update it
                 synchronized ( peerList ) {
                     int finalCurrentCookie = currentCookie;
-                    peerList.forEach(peer -> {
+                    peerList.forEachActivePeer(peer -> {
                         if ( peer.getCookie() == finalCurrentCookie) {
                             peer.setActive( true );
                             peer.setTTL( 7200 );
@@ -102,12 +97,11 @@ class ConnectionHandler implements Runnable {
             // Send response back to the peer
             P2PResponse response = new P2PResponse( Status.SUCCESS, currentCookie );
             connection.send( response );
-            System.out.println( "Registered a new peer with port " + portNumber + " and cookie " + cookie );
         }
         else if ( message instanceof LeaveMessage ) {
             LeaveMessage request = (LeaveMessage) message;
             synchronized ( peerList ) {
-                peerList.forEach(peer -> {
+                peerList.forEachActivePeer(peer -> {
                     if ( peer.getCookie() == request.getCookie() ) {
                         peer.setTTL( 0 );
                         return false;
@@ -132,7 +126,7 @@ class ConnectionHandler implements Runnable {
         else if ( message instanceof KeepAliveMessage ) {
             KeepAliveMessage request = (KeepAliveMessage) message;
             synchronized ( peerList ) {
-                peerList.forEach(peer -> {
+                peerList.forEachActivePeer(peer -> {
                     if ( peer.getCookie() == request.getCookie() ) {
                         peer.setTTL( 7200 );
                         return false;

@@ -21,13 +21,17 @@ public class PeerList {
     }
 
     public void cleanList() {
-        backingList.removeIf(entry -> entry.getTTL() >= System.currentTimeMillis());
+        backingList
+                .stream()
+                .filter(entry -> entry.getTTL() >= System.currentTimeMillis())
+                .forEach(entry -> entry.setActive(false));
     }
 
-    public void forEach(Predicate<? super PeerListEntry> loop) {
+    public void forEachActivePeer(Predicate<? super PeerListEntry> loop) {
         cleanList();
 
         for (PeerListEntry entry : backingList) {
+            if (!entry.isActive()) continue;
             if (!loop.test(entry)) break;
         }
     }
