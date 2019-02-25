@@ -5,9 +5,9 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class PeerList {
+public class PeerListEntry {
 
-    private static LinkedList<PeerList> peerList = new LinkedList<PeerList>();
+    private static LinkedList<PeerListEntry> peerList = new LinkedList<PeerListEntry>();
     
     private String        hostname;
 
@@ -25,7 +25,7 @@ public class PeerList {
 
     private Timer         timer;
     
-    public static LinkedList<PeerList> getPeerList() {
+    public static LinkedList<PeerListEntry> getPeerList() {
         return peerList;
     }
     

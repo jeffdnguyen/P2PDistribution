@@ -33,7 +33,7 @@ class ConnectionHandler implements Runnable {
     /**
      * List of peers that are registered with the RegServer
      */
-    LinkedList<PeerList> peerList = PeerList.getPeerList();
+    LinkedList<PeerListEntry> peerList = PeerListEntry.getPeerList();
 
     /**
      * Creates new thread to handle new connection at the passed in socket
@@ -70,7 +70,7 @@ class ConnectionHandler implements Runnable {
 
             // If cookie is -1, then this is a new peer
             if ( currentCookie == -1 ) {
-                PeerList newPeer = new PeerList();
+                PeerListEntry newPeer = new PeerListEntry();
                 cookie += 1;
                 currentCookie = cookie;
 
@@ -89,7 +89,7 @@ class ConnectionHandler implements Runnable {
             else {
                 // Find the existing peer and update it
                 synchronized ( peerList ) {
-                    for ( PeerList peer : peerList ) {
+                    for ( PeerListEntry peer : peerList ) {
                         if ( peer.getCookie() == currentCookie ) {
                             peer.setActive( true );
                             peer.setTTL( 7200 );
@@ -108,7 +108,7 @@ class ConnectionHandler implements Runnable {
         else if ( message instanceof LeaveMessage ) {
             LeaveMessage request = (LeaveMessage) message;
             synchronized ( peerList ) {
-                for ( PeerList peer : peerList ) {
+                for ( PeerListEntry peer : peerList ) {
                     if ( peer.getCookie() == request.getCookie() ) {
                         peer.setTTL( 0 );
                         break;
@@ -121,9 +121,9 @@ class ConnectionHandler implements Runnable {
             System.out.println( "LeaveMessage received from peer " + request.getCookie() );
         }
         else if ( message instanceof PQueryMessage ) {
-            LinkedList<PeerList> activePeers = new LinkedList<PeerList>();
+            LinkedList<PeerListEntry> activePeers = new LinkedList<PeerListEntry>();
             synchronized ( peerList ) {
-                for ( PeerList peer : peerList ) {
+                for ( PeerListEntry peer : peerList ) {
                     // Only add active peers to the list
                     if ( peer.isActive() ) {
                         activePeers.add( peer );
@@ -138,7 +138,7 @@ class ConnectionHandler implements Runnable {
         else if ( message instanceof KeepAliveMessage ) {
             KeepAliveMessage request = (KeepAliveMessage) message;
             synchronized ( peerList ) {
-                for ( PeerList peer : peerList ) {
+                for ( PeerListEntry peer : peerList ) {
                     if ( peer.getCookie() == request.getCookie() ) {
                         peer.setTTL( 7200 );
                         break;
