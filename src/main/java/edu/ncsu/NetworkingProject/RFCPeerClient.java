@@ -10,9 +10,7 @@ import edu.ncsu.NetworkingProject.protocol.messages.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * The part of the Peer that registers with the RegServer,
@@ -35,6 +33,9 @@ public class RFCPeerClient implements Runnable {
         Connection conn = openNewConnection(RegServer.REGSERVER_PORT);
         registerWithRegServer(conn);
         conn.close();
+
+        Timer timer = new Timer( true );
+        timer.schedule( new KeepAliveThread(this.cookie), 60000 );
 
         while(rfcFolder.listFiles().length < 60) {
             conn = openNewConnection(RegServer.REGSERVER_PORT);
@@ -105,23 +106,31 @@ public class RFCPeerClient implements Runnable {
     /**
      * Make sure the RegServer doesn't mark the current Peer as inactive
      */
-    private void keepAlive(Connection conn) {
-        KeepAliveMessage message = new KeepAliveMessage(
-                "RegServer",
-                new ArrayList<>( List.of(new P2PHeader("Cookie", Integer.toString(this.cookie))) )
-        );
-        conn.send(message);
-        P2PCommunication response = conn.waitForNextCommunication();
-        if ( response instanceof P2PResponse) {
-            P2PResponse leaveResponse = (P2PResponse) response;
-            if (!leaveResponse.getStatus().equals(Status.SUCCESS)) {
-                System.out.println("Failed to send KeepAlive. Retrying...");
-                try { Thread.sleep(1000); }
-                catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-                keepAlive(conn);
+    private class KeepAliveThread extends TimerTask {
+        private int cookie;
+
+        public KeepAliveThread(int cookie) {
+            this.cookie = cookie;
+        }
+
+        @Override
+        public void run() {
+            Connection conn = openNewConnection(RegServer.REGSERVER_PORT);
+            KeepAliveMessage message = new KeepAliveMessage(
+                    "RegServer",
+                    new ArrayList<>( List.of(new P2PHeader("Cookie", Integer.toString(this.cookie))) )
+            );
+            conn.send(message);
+            P2PCommunication response = conn.waitForNextCommunication();
+            if ( response instanceof P2PResponse) {
+                P2PResponse leaveResponse = (P2PResponse) response;
+                if (!leaveResponse.getStatus().equals(Status.SUCCESS)) {
+                    System.out.println("Failed to send KeepAlive: " + leaveResponse);
+                }
+            } else {
+                throw new UnexpectedMessageException(response);
             }
-        } else {
-            throw new UnexpectedMessageException(response);
+            conn.close();
         }
     }
 
