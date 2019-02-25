@@ -51,12 +51,12 @@ class ConnectionHandler implements Runnable {
      * Handles sequence of messages between the peer and RegServer
      */
     @Override
-    synchronized public void run () {
+    public void run () {
         Connection connection = new Connection( connectionSocket );
 
         // Grab the incoming message
         P2PMessage message = (P2PMessage) connection.waitForNextCommunication();
-        if (message == null) {
+        if ( message == null ) {
             // The peer closed their end of the connection
             connection.close();
             return;
@@ -82,67 +82,76 @@ class ConnectionHandler implements Runnable {
                 newPeer.setNumberOfTimesActive( 1 );
                 newPeer.setLastActive( LocalDateTime.now() );
 
-                peerList.add( newPeer );
+                synchronized ( peerList ) {
+                    peerList.add( newPeer );
+                }
             }
             else {
                 // Find the existing peer and update it
-                for ( PeerList peer : peerList ) {
-                    if ( peer.getCookie() == currentCookie ) {
-                        peer.setActive( true );
-                        peer.setTTL( 7200 );
-                        peer.setNumberOfTimesActive( peer.getNumberOfTimesActive() + 1 );
-                        break;
+                synchronized ( peerList ) {
+                    for ( PeerList peer : peerList ) {
+                        if ( peer.getCookie() == currentCookie ) {
+                            peer.setActive( true );
+                            peer.setTTL( 7200 );
+                            peer.setNumberOfTimesActive( peer.getNumberOfTimesActive() + 1 );
+                            break;
+                        }
                     }
                 }
             }
 
             // Send response back to the peer
-            P2PResponse response = new P2PResponse(Status.SUCCESS, currentCookie);
+            P2PResponse response = new P2PResponse( Status.SUCCESS, currentCookie );
             connection.send( response );
-            System.out.println("Registered a new peer with port " + portNumber + " and cookie " + cookie);
+            System.out.println( "Registered a new peer with port " + portNumber + " and cookie " + cookie );
         }
         else if ( message instanceof LeaveMessage ) {
             LeaveMessage request = (LeaveMessage) message;
-            for ( PeerList peer : peerList ) {
-                if ( peer.getCookie() == request.getCookie() ) {
-                    peer.setTTL( 0 );
-                    break;
+            synchronized ( peerList ) {
+                for ( PeerList peer : peerList ) {
+                    if ( peer.getCookie() == request.getCookie() ) {
+                        peer.setTTL( 0 );
+                        break;
+                    }
                 }
             }
 
-            P2PResponse response = new P2PResponse(Status.SUCCESS, request.getCookie());
+            P2PResponse response = new P2PResponse( Status.SUCCESS, request.getCookie() );
             connection.send( response );
-            System.out.println("LeaveMessage received from peer " + request.getCookie());
+            System.out.println( "LeaveMessage received from peer " + request.getCookie() );
         }
         else if ( message instanceof PQueryMessage ) {
             LinkedList<PeerList> activePeers = new LinkedList<PeerList>();
-
-            for ( PeerList peer : peerList ) {
-                // Only add active peers to the list
-                if (peer.isActive()) {
-                    activePeers.add( peer );
+            synchronized ( peerList ) {
+                for ( PeerList peer : peerList ) {
+                    // Only add active peers to the list
+                    if ( peer.isActive() ) {
+                        activePeers.add( peer );
+                    }
                 }
             }
 
-            P2PResponse response = new P2PResponse(Status.SUCCESS, Utils.objectToByteArray(activePeers));
+            P2PResponse response = new P2PResponse( Status.SUCCESS, Utils.objectToByteArray( activePeers ) );
             connection.send( response );
-            System.out.println("PQueryMessage received");
+            System.out.println( "PQueryMessage received" );
         }
         else if ( message instanceof KeepAliveMessage ) {
             KeepAliveMessage request = (KeepAliveMessage) message;
-            for ( PeerList peer : peerList ) {
-                if ( peer.getCookie() == request.getCookie() ) {
-                    peer.setTTL( 7200 );
-                    break;
+            synchronized ( peerList ) {
+                for ( PeerList peer : peerList ) {
+                    if ( peer.getCookie() == request.getCookie() ) {
+                        peer.setTTL( 7200 );
+                        break;
+                    }
                 }
             }
 
-            P2PResponse response = new P2PResponse(Status.SUCCESS, request.getCookie());
+            P2PResponse response = new P2PResponse( Status.SUCCESS, request.getCookie() );
             connection.send( response );
-            System.out.println("KeepAliveMessage received from peer " + request.getCookie());
+            System.out.println( "KeepAliveMessage received from peer " + request.getCookie() );
         }
         else {
-            throw new ProtocolException.NoSuchMessageType(message.getClass().toString());
+            throw new ProtocolException.NoSuchMessageType( message.getClass().toString() );
         }
         // Close TCP connection
         connection.close();
