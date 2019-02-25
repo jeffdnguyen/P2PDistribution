@@ -35,7 +35,7 @@ class ConnectionHandler implements Runnable {
      * TODO: This list is always empty since each thread creates a new peerList.
      * Should be created in RegServer, passed in, and put in synchronized blocks.
      */
-    LinkedList<PeerList> peerList = new LinkedList<PeerList>();
+    LinkedList<PeerList> peerList = PeerList.getPeerList();
 
     /**
      * Creates new thread to handle new connection at the passed in socket

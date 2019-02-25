@@ -1,11 +1,14 @@
 package edu.ncsu.NetworkingProject;
 
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class PeerList {
 
+    private static LinkedList<PeerList> peerList = new LinkedList<PeerList>();
+    
     private String        hostname;
 
     private int           cookie;
@@ -21,7 +24,11 @@ public class PeerList {
     private LocalDateTime lastActive;
 
     private Timer         timer;
-
+    
+    public static LinkedList<PeerList> getPeerList() {
+        return peerList;
+    }
+    
     public String getHostname () {
         return hostname;
     }
