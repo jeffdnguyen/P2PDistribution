@@ -1,9 +1,6 @@
 package edu.ncsu.NetworkingProject;
 
-import edu.ncsu.NetworkingProject.protocol.P2PMessage;
-import edu.ncsu.NetworkingProject.protocol.P2PResponse;
-import edu.ncsu.NetworkingProject.protocol.ProtocolException;
-import edu.ncsu.NetworkingProject.protocol.Status;
+import edu.ncsu.NetworkingProject.protocol.*;
 import edu.ncsu.NetworkingProject.protocol.messages.GetRFCMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.RFCQueryMessage;
 
@@ -30,7 +27,7 @@ public class RFCPeerServer implements Runnable {
         }
         this.rfcFolder = new File("./rfcs/" + port);
         this.rfcFolder.mkdir();
-        addLocalRFCFiles();
+        addLocalRFCFiles(port);
     }
 
     private Connection waitForNewConnection() {
@@ -43,11 +40,11 @@ public class RFCPeerServer implements Runnable {
         return new Connection(connectionSocket);
     }
 
-    private void addLocalRFCFiles() {
+    private void addLocalRFCFiles(int port) {
         for (File file : rfcFolder.listFiles()) {
             if (!file.getName().startsWith("rfc")) continue;
             RFCFile rfcFile = new RFCFile(file);
-            rfcIndex.index.add(new RFCIndexEntry(rfcFile.id, rfcFile.title));
+            rfcIndex.index.add(new RFCIndexEntry(rfcFile.id, rfcFile.title, P2PCommunication.getHostname(), port));
         }
     }
 

@@ -1,7 +1,5 @@
 package edu.ncsu.NetworkingProject;
 
-import edu.ncsu.NetworkingProject.protocol.P2PCommunication;
-
 import java.io.Serializable;
 import java.util.Date;
 
@@ -13,17 +11,7 @@ public class RFCIndexEntry implements Serializable {
     private int port;
     long ttl;
 
-    public RFCIndexEntry(int number, String title) {
-        this.number = number;
-        this.title = title;
-        this.hostname = P2PCommunication.getHostname();
-        this.ttl = new Date().getTime();
-    }
-
     public RFCIndexEntry(int number, String title, String hostname, int port) {
-        /* TODO: If an entry refers to a remote computer,
-           the client needs to know both the hostname and the port so it can open a connection there
-         */
         this.number = number;
         this.title = title;
         this.hostname = hostname;
