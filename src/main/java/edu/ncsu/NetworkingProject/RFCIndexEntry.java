@@ -10,12 +10,21 @@ public class RFCIndexEntry implements Serializable {
     private int number;
     private String title;
     private String hostname;
+    private int port;
     long ttl;
 
     public RFCIndexEntry(int number, String title) {
         this.number = number;
         this.title = title;
         this.hostname = P2PCommunication.getHostname();
+        this.ttl = new Date().getTime();
+    }
+
+    public RFCIndexEntry(int number, String title, String hostname, int port) {
+        this.number = number;
+        this.title = title;
+        this.hostname = hostname;
+        this.port = port;
         this.ttl = new Date().getTime();
     }
 
@@ -29,6 +38,10 @@ public class RFCIndexEntry implements Serializable {
 
     public String getHostname() {
         return hostname;
+    }
+
+    public int getPort() {
+        return port;
     }
 
     @Override

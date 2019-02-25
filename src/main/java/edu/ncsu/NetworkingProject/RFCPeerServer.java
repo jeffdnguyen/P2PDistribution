@@ -15,6 +15,7 @@ public class RFCPeerServer implements Runnable {
 
     private final RFCIndex rfcIndex;
     private final ServerSocket socket;
+    private final File rfcFolder;
 
 
     public RFCPeerServer(int port, RFCIndex rfcIndex) {
@@ -24,6 +25,9 @@ public class RFCPeerServer implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException("Unable to start RFC server!", e);
         }
+        this.rfcFolder = new File("./rfcs/" + port);
+        this.rfcFolder.mkdir();
+        addLocalRFCFiles();
     }
 
     private Connection waitForNewConnection() {
@@ -34,6 +38,14 @@ public class RFCPeerServer implements Runnable {
             throw new RuntimeException("Unable to start RFC server!", e);
         }
         return new Connection(connectionSocket);
+    }
+
+    private void addLocalRFCFiles() {
+        for (File file : rfcFolder.listFiles()) {
+            if (!file.getName().startsWith("rfc")) continue;
+            RFCFile rfcFile = new RFCFile(file);
+            rfcIndex.index.add(new RFCIndexEntry(rfcFile.id, rfcFile.title));
+        }
     }
 
     @Override
@@ -64,7 +76,7 @@ public class RFCPeerServer implements Runnable {
             } else if (message instanceof GetRFCMessage) {
                 byte[] rfcFileAsBytes;
                 try {
-                    FileInputStream fileIn = new FileInputStream(new File(Peer.rfcRoot, "rfc" + ((GetRFCMessage) message).getRFCID() + ".txt"));
+                    FileInputStream fileIn = new FileInputStream(new File(rfcFolder, "rfc" + ((GetRFCMessage) message).getRFCID() + ".txt"));
 
                     rfcFileAsBytes = fileIn.readAllBytes();
                 } catch (FileNotFoundException e) {

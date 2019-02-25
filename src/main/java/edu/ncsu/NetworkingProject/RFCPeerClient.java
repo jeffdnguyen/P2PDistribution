@@ -7,7 +7,7 @@ import edu.ncsu.NetworkingProject.protocol.ProtocolException.UnexpectedMessageEx
 import edu.ncsu.NetworkingProject.protocol.Status;
 import edu.ncsu.NetworkingProject.protocol.messages.*;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -23,10 +23,13 @@ public class RFCPeerClient implements Runnable {
     private int portNumber;
     private int cookie;
     private final RFCIndex index;
+    private final File rfcFolder;
 
-    public RFCPeerClient (int portNumber, RFCIndex index) {
+    public RFCPeerClient(int portNumber, RFCIndex index) {
         this.portNumber = portNumber;
         this.index = index;
+        this.rfcFolder = new File("./rfcs/" + portNumber);
+        this.rfcFolder.mkdir();
     }
 
     @Override public void run () {
@@ -34,31 +37,26 @@ public class RFCPeerClient implements Runnable {
         registerWithRegServer(conn);
         conn.close();
 
-        conn = openNewConnection(RegServer.REGSERVER_PORT);
-        LinkedList<PeerList> peerList = getPeerList(conn);
-        conn.close();
-        while (peerList.size() == 0) {
+        while(rfcFolder.listFiles().length < 60) {
             conn = openNewConnection(RegServer.REGSERVER_PORT);
-            keepAlive(conn);
+            LinkedList<PeerList> peerList = getPeerList(conn);
             conn.close();
 
-            try { Thread.sleep(3000); }
-            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+            for(PeerList peer : peerList) {
+                conn = openNewConnection(peer.getPortNumber());
+                getRFCIndex(conn);
+                conn.close();
+            }
 
-            conn = openNewConnection(RegServer.REGSERVER_PORT);
-            peerList = getPeerList(conn);
-            conn.close();
+            for (RFCIndexEntry entry : index.index) {
+                if (!entry.getHostname().equals(P2PCommunication.getHostname()) && entry.getPort() != portNumber) {
+                    conn = openNewConnection(entry.getPort());
+                    downloadRFC(conn, entry);
+                    conn.close();
+                }
+            }
         }
 
-        for(PeerList peer : peerList) {
-            conn = openNewConnection(peer.getPortNumber());
-            getRFCIndex(conn);
-            conn.close();
-
-            conn = openNewConnection(peer.getPortNumber());
-            downloadRFCs(conn);
-            conn.close();
-        }
         conn = openNewConnection(RegServer.REGSERVER_PORT);
         leaveRegServer(conn);
         conn.close();
@@ -69,7 +67,7 @@ public class RFCPeerClient implements Runnable {
      * Put in a method since the client has to open separate, new connections
      * for joining, querying, downloading, and exiting
      */
-    private Connection openNewConnection (int remotePort) {
+    private Connection openNewConnection(int remotePort) {
         try {
             Socket socket = new Socket(
                     InetAddress.getLocalHost(),
@@ -87,7 +85,7 @@ public class RFCPeerClient implements Runnable {
      * Send a RegisterMessage to the RegServer with the port number.
      * The server replies with a cookie, which we save for all future messages.
      */
-    private void registerWithRegServer (Connection conn) {
+    private void registerWithRegServer(Connection conn) {
         RegisterMessage message = new RegisterMessage(
                 "PORT " + portNumber,
                 new ArrayList<>()
@@ -106,7 +104,7 @@ public class RFCPeerClient implements Runnable {
     /**
      * Make sure the RegServer doesn't mark the current Peer as inactive
      */
-    private void keepAlive (Connection conn) {
+    private void keepAlive(Connection conn) {
         KeepAliveMessage message = new KeepAliveMessage(
                 "RegServer",
                 new ArrayList<>( List.of(new P2PHeader("Cookie", Integer.toString(this.cookie))) )
@@ -145,7 +143,7 @@ public class RFCPeerClient implements Runnable {
         }
     }
 
-    private void getRFCIndex (Connection conn) {
+    private void getRFCIndex(Connection conn) {
         RFCQueryMessage message = new RFCQueryMessage(
                 "RFCPeerServer",
                 new ArrayList<>()
@@ -164,13 +162,35 @@ public class RFCPeerClient implements Runnable {
         }
     }
 
-    private void downloadRFCs (Connection conn) {
-        // TODO
+    private void downloadRFC(Connection conn, RFCIndexEntry entry) {
+        GetRFCMessage message = new GetRFCMessage(
+                "RFC " + entry.getNumber(),
+                new ArrayList<>( List.of(new P2PHeader("Cookie", Integer.toString(this.cookie))) )
+        );
+        conn.send(message);
+        P2PCommunication response = conn.waitForNextCommunication();
+        if ( response instanceof P2PResponse) {
+            P2PResponse rfcResponse = (P2PResponse) response;
+            if (!rfcResponse.getStatus().equals(Status.SUCCESS)) {
+                System.out.println("Failed to get RFC " + entry.getNumber());
+            } else {
+                try {
+                    OutputStream out = new BufferedOutputStream(
+                            new FileOutputStream(rfcFolder.getPath() + "rfc" + entry.getNumber() + ".txt")
+                    );
+                    out.write(rfcResponse.getData());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            throw new UnexpectedMessageException(response);
+        }
     }
 
 
 
-    private void leaveRegServer (Connection conn) {
+    private void leaveRegServer(Connection conn) {
         LeaveMessage message = new LeaveMessage(
                 "RegServer",
                 new ArrayList<>( List.of(new P2PHeader("Cookie", Integer.toString(this.cookie))) )

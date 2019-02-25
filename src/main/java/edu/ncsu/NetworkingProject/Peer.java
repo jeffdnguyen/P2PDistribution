@@ -7,8 +7,6 @@ import java.io.File;
  */
 public class Peer {
 
-    public static final File rfcRoot = new File("./rfcs/");
-
     private static RFCIndex rfcIndex = new RFCIndex();
 
     private static int portNumber;
@@ -20,7 +18,6 @@ public class Peer {
             System.err.println("Peers must have their port number in args[0]");
             throw e;
         }
-        addLocalRfcFiles();
         startRFCPeerServer();
         startRFCPeerClient();
     }
@@ -37,14 +34,6 @@ public class Peer {
         Thread serverThread = new Thread(server);
         serverThread.setName("RFC server thread " + portNumber);
         serverThread.start();
-    }
-
-    private static void addLocalRfcFiles() {
-        for (File file : rfcRoot.listFiles()) {
-            if (!file.getName().startsWith("rfc")) continue;
-            RFCFile rfcFile = new RFCFile(file);
-            rfcIndex.index.add(new RFCIndexEntry(rfcFile.id, rfcFile.title));
-        }
     }
 
 }
