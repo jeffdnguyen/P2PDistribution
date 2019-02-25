@@ -7,8 +7,23 @@ A P2P network for tranfering RFC files ([full description](https://moodle-course
 * Mac Chaffee (machaffe)
 * Wynne Plaga (rwplaga)
 
-## How to Run
-1. Sacrifice a healthy goat to Oracle so they don't sue you for using Java
-2. Become the 3,000,000,001st device that runs Java
-3. Compile
-4. Run
+## How to Run Task 1
+1. In the folder `rfcs/`, create folders called `8000`, `8001`, `8002`, `8003`, `8004`.
+2. Move all 60 RFC files into folder `8000`
+3. In one terminal window, execute `edu.ncsu.NetworkingProject.proj1.java` and run the Registration Server
+   ```
+   Which service would you like to run?
+   1) Registration Server
+   2) Peer(s) 
+   1
+   ```
+4. In another terminal window, execute `edu.ncsu.NetworkingProject.proj1.java` and run five Peers.
+   ```
+   Which service would you like to run?
+   1) Registration Server
+   2) Peer(s) 
+   2
+   How many peers do you wish to run?
+   5
+   ```
+5. Inspect the 5 folders you created. Each folder should contain all 60 RFCs.
