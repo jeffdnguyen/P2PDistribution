@@ -32,8 +32,6 @@ class ConnectionHandler implements Runnable {
 
     /**
      * List of peers that are registered with the RegServer
-     * TODO: This list is always empty since each thread creates a new peerList.
-     * Should be created in RegServer, passed in, and put in synchronized blocks.
      */
     LinkedList<PeerList> peerList = PeerList.getPeerList();
 
@@ -53,7 +51,7 @@ class ConnectionHandler implements Runnable {
      * Handles sequence of messages between the peer and RegServer
      */
     @Override
-    public void run () {
+    synchronized public void run () {
         Connection connection = new Connection( connectionSocket );
 
         // Grab the incoming message
