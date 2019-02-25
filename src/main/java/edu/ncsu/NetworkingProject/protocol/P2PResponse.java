@@ -89,6 +89,10 @@ public class P2PResponse extends P2PCommunication {
         return headers;
     }
 
+    public byte[] getData () {
+        return data;
+    }
+
     @Override
     public String toString() {
         return getTextComponent();
@@ -98,7 +102,7 @@ public class P2PResponse extends P2PCommunication {
     public byte[] toByteArray() {
         byte[] textAsBytes = getTextComponent().getBytes();
         // Add a 1 to identify this as a P2PResponse and add the length to help the receiver parse the buffer
-        return ByteBuffer.allocate(5 + textAsBytes.length + data.length).put((byte)1).putInt(textAsBytes.length + data.length).put(textAsBytes).put(data).array();
+        return ByteBuffer.allocate(5 + textAsBytes.length + data.length).put((byte)1).putInt(textAsBytes.length).put(textAsBytes).put(data).array();
     }
 
 }

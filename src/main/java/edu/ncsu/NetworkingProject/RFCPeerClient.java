@@ -101,7 +101,7 @@ public class RFCPeerClient implements Runnable {
         P2PCommunication response = conn.waitForNextCommunication();
         if ( response instanceof P2PResponse ) {
             P2PResponse pQueryResponse = (P2PResponse) response;
-            return Utils.byteArrayToObject(pQueryResponse.toByteArray());
+            return Utils.byteArrayToObject(pQueryResponse.getData());
         } else {
             throw new UnexpectedMessageException(response);
         }

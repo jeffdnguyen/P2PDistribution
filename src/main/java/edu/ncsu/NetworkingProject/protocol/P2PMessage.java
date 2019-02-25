@@ -66,8 +66,6 @@ public abstract class P2PMessage extends P2PCommunication {
      * @return the message object.
      */
     protected static P2PMessage constructMessageFromByteBuffer(ByteBuffer messageAsBytes) {
-        // Skip over the int (length) at the beginning before decoding
-        messageAsBytes.getInt();
         String messageAsString = Charset.defaultCharset().decode(messageAsBytes).toString();
         String[] lines = messageAsString.split("\n");
         String[] firstLineTokens = lines[0].split(" ");
@@ -132,8 +130,8 @@ public abstract class P2PMessage extends P2PCommunication {
     @Override
     public byte[] toByteArray() {
         byte[] textAsBytes = getTextComponent().getBytes();
-        // Add a 0 to identify this as a P2PMessage and add the length to help the receiver parse the buffer
-        return ByteBuffer.allocate(5 + textAsBytes.length).put((byte) 0).putInt(textAsBytes.length).put(textAsBytes).array();
+        // Add a 0 to identify this as a P2PMessage
+        return ByteBuffer.allocate(1 + textAsBytes.length).put((byte) 0).put(textAsBytes).array();
     }
 
     @Override
