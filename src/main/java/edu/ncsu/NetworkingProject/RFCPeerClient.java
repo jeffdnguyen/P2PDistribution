@@ -61,9 +61,9 @@ public class RFCPeerClient implements Runnable {
             }
         }
 
-//        conn = openNewConnection(RegServer.REGSERVER_PORT);
-//        leaveRegServer(conn);
-//        conn.close();
+        conn = openNewConnection(RegServer.REGSERVER_PORT);
+        leaveRegServer(conn);
+        conn.close();
     }
 
     /**
