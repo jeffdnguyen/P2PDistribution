@@ -1,5 +1,6 @@
 package edu.ncsu.NetworkingProject;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.function.Predicate;
 
@@ -29,6 +30,14 @@ public class PeerList {
         for (PeerListEntry entry : backingList) {
             if (!loop.test(entry)) break;
         }
+    }
+
+    /**
+     * Since PeerList isn't serializable, this method returns a serializable copy
+     * of backingList
+     */
+    public LinkedList<PeerListEntry> getCopy() {
+        return new LinkedList<>(backingList);
     }
 
 }

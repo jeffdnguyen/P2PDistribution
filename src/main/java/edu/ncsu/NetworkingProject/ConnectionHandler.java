@@ -124,7 +124,7 @@ class ConnectionHandler implements Runnable {
             P2PResponse response;
             synchronized (peerList) {
                 peerList.cleanList();
-                response = new P2PResponse( Status.SUCCESS, Utils.objectToByteArray( peerList ) );
+                response = new P2PResponse( Status.SUCCESS, Utils.objectToByteArray( peerList.getCopy() ) );
             }
             connection.send( response );
             System.out.println( "PQueryMessage received" );
