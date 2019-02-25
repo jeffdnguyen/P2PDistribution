@@ -26,8 +26,6 @@ public class PQueryMessage extends P2PMessage {
      *            the argument(s) pertaining to the request method
      * @param headers
      *            list of headers associated with the request method
-     * @param data
-     *            any data the request method may hold
      */
     public PQueryMessage (String argument, List<P2PHeader> headers) {
         if ( argument.isEmpty() )

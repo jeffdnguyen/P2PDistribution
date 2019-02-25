@@ -108,6 +108,7 @@ class ConnectionHandler implements Runnable {
 
             P2PResponse response = new P2PResponse(Status.SUCCESS, request.getCookie());
             connection.send( response );
+            System.out.println("Peer with cookie " + request.getCookie() + " disconnected successfully.");
         }
         else if ( message instanceof PQueryMessage ) {
             LinkedList<PeerList> activePeers = new LinkedList<PeerList>();

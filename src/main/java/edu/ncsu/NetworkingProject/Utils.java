@@ -1,6 +1,9 @@
 package edu.ncsu.NetworkingProject;
 
+import edu.ncsu.NetworkingProject.protocol.P2PHeader;
+
 import java.io.*;
+import java.util.List;
 
 public class Utils {
 
@@ -23,6 +26,14 @@ public class Utils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static int getCookieFromHeaders(List<P2PHeader> headers) {
+        P2PHeader cookie = headers.stream()
+                .filter(header -> header.name.equals("Cookie"))
+                .findFirst()
+                .orElseThrow();
+        return Integer.parseInt(cookie.value);
     }
 
 }

@@ -93,6 +93,10 @@ public class P2PResponse extends P2PCommunication {
         return data;
     }
 
+    public Status getStatus () {
+        return status;
+    }
+
     @Override
     public String toString() {
         return getTextComponent();
