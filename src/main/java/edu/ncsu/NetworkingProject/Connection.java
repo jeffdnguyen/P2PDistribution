@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class Connection {
 
@@ -38,8 +39,10 @@ public class Connection {
         try {
             int size = input.readInt();
             byte[] data = new byte[size];
-            int sucBytes = input.read(data);
-            if (sucBytes != size) throw new RuntimeException("Failed to read all bytes");
+            int sucBytes = 0;
+            do {
+                sucBytes += input.read(data, sucBytes, size - sucBytes);
+            } while (sucBytes != size);
             return P2PCommunication.constructCommunicationFromBytes(data);
         } catch (EOFException e) {
             return null;
