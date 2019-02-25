@@ -39,10 +39,10 @@ public class RFCPeerClient implements Runnable {
 
         while(rfcFolder.listFiles().length < 60) {
             conn = openNewConnection(RegServer.REGSERVER_PORT);
-            LinkedList<PeerList> peerList = getPeerList(conn);
+            LinkedList<PeerListEntry> peerList = getPeerList(conn);
             conn.close();
 
-            for(PeerList peer : peerList) {
+            for(PeerListEntry peer : peerList) {
                 conn = openNewConnection(peer.getPortNumber());
                 getRFCIndex(conn);
                 conn.close();
@@ -138,7 +138,7 @@ public class RFCPeerClient implements Runnable {
      * Ask the RegServer for a list of all peers
      * @return the LinkedList of peers
      */
-    private LinkedList<PeerList> getPeerList(Connection conn) {
+    private LinkedList<PeerListEntry> getPeerList(Connection conn) {
         PQueryMessage message = new PQueryMessage(
                 "activePeerList",
                 new ArrayList<>( List.of(new P2PHeader("Cookie", Integer.toString(this.cookie))) )
