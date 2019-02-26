@@ -7,13 +7,14 @@ import java.io.InputStreamReader;
 class proj1 {
 
     public static void main(String[] args) {
+        System.out.println("========NOTE: Make sure your /rfcs/ folder is set up according to the README========");
         System.out.println("What is the IP of the RegServer? (or enter 'localhost' if you wish to run it locally)");
         String regServerIP = getString();
         if (regServerIP.equals("localhost")) {
             new Thread(new RegServer()).start();
             System.out.println("Registration server started successfully.");
         }
-        System.out.println("How many peers do you wish to run?");
+        System.out.println("How many peers do you wish to run on this machine?");
         int response = getInt();
         for (int i = 0; i < response; i++) {
             // Pass the peer a unique port number

@@ -41,6 +41,7 @@ public class RFCPeerClient implements Runnable {
         Timer timer = new Timer( true );
         timer.schedule( new KeepAliveThread(this.cookie), KEEP_ALIVE_TIMER );
 
+        int rfcsDownloaded = 0;
         while(rfcFolder.listFiles().length < RFCS_TO_DOWNLOAD) {
             conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
             LinkedList<PeerListEntry> peerList = getPeerList(conn);
@@ -50,6 +51,10 @@ public class RFCPeerClient implements Runnable {
                 conn = openNewConnection(peer.getHostname(), peer.getPortNumber());
                 getRFCIndex(conn);
                 conn.close();
+                if (index.index.size() == RFCS_TO_DOWNLOAD) {
+                    // This peer now holds the full RFCIndex
+                    break;
+                }
             }
 
             synchronized (index) {
@@ -57,15 +62,19 @@ public class RFCPeerClient implements Runnable {
                     if (!entry.getHostname().equals(P2PCommunication.getHostname()) || entry.getPort() != portNumber) {
                         conn = openNewConnection(entry.getHostname(), entry.getPort());
                         downloadRFC(conn, entry);
+                        rfcsDownloaded++;
                         conn.close();
                     }
                 }
             }
         }
-
-//        conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
-//        leaveRegServer(conn);
-//        conn.close();
+        // Only leave if the current peer isn't the one distributing all the files (like in Task 1)
+        if (rfcsDownloaded > 0) {
+            conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
+            leaveRegServer(conn);
+            conn.close();
+            timer.cancel();
+        }
     }
 
     /**
@@ -127,9 +136,9 @@ public class RFCPeerClient implements Runnable {
             conn.send(message);
             P2PCommunication response = conn.waitForNextCommunication();
             if ( response instanceof P2PResponse) {
-                P2PResponse leaveResponse = (P2PResponse) response;
-                if (!leaveResponse.getStatus().equals(Status.SUCCESS)) {
-                    System.out.println("Failed to send KeepAlive: " + leaveResponse);
+                P2PResponse keepAliveResponse = (P2PResponse) response;
+                if (!keepAliveResponse.getStatus().equals(Status.SUCCESS)) {
+                    System.out.println("Failed to send KeepAlive: " + keepAliveResponse);
                 }
             } else {
                 throw new UnexpectedMessageException(response);
@@ -165,8 +174,8 @@ public class RFCPeerClient implements Runnable {
         conn.send(message);
         P2PCommunication response = conn.waitForNextCommunication();
         if ( response instanceof P2PResponse ) {
-            P2PResponse pQueryResponse = (P2PResponse) response;
-            RFCIndex otherIndex = Utils.byteArrayToObject(pQueryResponse.getData());
+            P2PResponse rfcIndexResponse = (P2PResponse) response;
+            RFCIndex otherIndex = Utils.byteArrayToObject(rfcIndexResponse.getData());
             synchronized (index) {
                 index.mergeWith(otherIndex);
                 System.out.println(portNumber + ": Got an RFCIndex of size " + otherIndex.index.size());

@@ -100,7 +100,7 @@ class ConnectionHandler implements Runnable {
             synchronized ( peerList ) {
                 peerList.forEachActivePeer(peer -> {
                     if ( peer.getCookie() == request.getCookie() ) {
-                        peer.setTTL( 0 );
+                        peer.setActive(false);
                         return false;
                     }
                     return true;
