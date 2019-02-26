@@ -1,9 +1,6 @@
 package edu.ncsu.NetworkingProject;
 
-import edu.ncsu.NetworkingProject.protocol.P2PMessage;
-import edu.ncsu.NetworkingProject.protocol.P2PResponse;
-import edu.ncsu.NetworkingProject.protocol.ProtocolException;
-import edu.ncsu.NetworkingProject.protocol.Status;
+import edu.ncsu.NetworkingProject.protocol.*;
 import edu.ncsu.NetworkingProject.protocol.messages.KeepAliveMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.LeaveMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.PQueryMessage;
@@ -65,7 +62,7 @@ class ConnectionHandler implements Runnable {
             if ( currentCookie == -1 ) {
                 PeerListEntry newPeer = new PeerListEntry();
 
-                newPeer.setHostname( connectionSocket.getInetAddress().getHostName() );
+                newPeer.setHostname( P2PCommunication.getHostname() );
                 newPeer.setActive( true );
                 newPeer.setTTL( 7200 );
                 newPeer.setPortNumber( portNumber );
