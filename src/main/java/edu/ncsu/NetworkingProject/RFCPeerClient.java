@@ -96,6 +96,8 @@ public class RFCPeerClient implements Runnable {
             synchronized (index) {
                 indexToLoopOver = new LinkedList<>(index.index);
             }
+            // Comment out the following line to simulate the "worst case scenario" for Task 2
+            Collections.shuffle(indexToLoopOver);
             for (RFCIndexEntry entry : indexToLoopOver) {
                 if (!entry.getHostname().equals(P2PCommunication.getHostname()) || entry.getPort() != portNumber) {
                     downloadRFC(entry.getHostname(), entry.getPort(), entry);
