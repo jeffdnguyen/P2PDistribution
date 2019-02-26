@@ -17,6 +17,7 @@ import java.util.*;
  * queries other peers, and downloads RFCs
  */
 public class RFCPeerClient implements Runnable {
+    private final String regServerIP;
     private int portNumber;
     private int cookie;
     private final RFCIndex index;
@@ -24,7 +25,8 @@ public class RFCPeerClient implements Runnable {
     public static final int RFCS_TO_DOWNLOAD = 60;
     public static final int KEEP_ALIVE_TIMER = 60000;
 
-    public RFCPeerClient(int portNumber, RFCIndex index) {
+    public RFCPeerClient(String regServerIP, int portNumber, RFCIndex index) {
+        this.regServerIP = regServerIP;
         this.portNumber = portNumber;
         this.index = index;
         this.rfcFolder = new File("./rfcs/" + portNumber + "/");
@@ -32,7 +34,7 @@ public class RFCPeerClient implements Runnable {
     }
 
     @Override public void run () {
-        Connection conn = openNewConnection(RegServer.REGSERVER_PORT);
+        Connection conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
         registerWithRegServer(conn);
         conn.close();
 
@@ -40,12 +42,12 @@ public class RFCPeerClient implements Runnable {
         timer.schedule( new KeepAliveThread(this.cookie), KEEP_ALIVE_TIMER );
 
         while(rfcFolder.listFiles().length < RFCS_TO_DOWNLOAD) {
-            conn = openNewConnection(RegServer.REGSERVER_PORT);
+            conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
             LinkedList<PeerListEntry> peerList = getPeerList(conn);
             conn.close();
 
             for(PeerListEntry peer : peerList) {
-                conn = openNewConnection(peer.getPortNumber());
+                conn = openNewConnection(peer.getHostname(), peer.getPortNumber());
                 getRFCIndex(conn);
                 conn.close();
             }
@@ -53,7 +55,7 @@ public class RFCPeerClient implements Runnable {
             synchronized (index) {
                 for (RFCIndexEntry entry : index.index) {
                     if (!entry.getHostname().equals(P2PCommunication.getHostname()) || entry.getPort() != portNumber) {
-                        conn = openNewConnection(entry.getPort());
+                        conn = openNewConnection(entry.getHostname(), entry.getPort());
                         downloadRFC(conn, entry);
                         conn.close();
                     }
@@ -61,7 +63,7 @@ public class RFCPeerClient implements Runnable {
             }
         }
 
-        conn = openNewConnection(RegServer.REGSERVER_PORT);
+        conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
         leaveRegServer(conn);
         conn.close();
     }
@@ -71,10 +73,10 @@ public class RFCPeerClient implements Runnable {
      * Put in a method since the client has to open separate, new connections
      * for joining, querying, downloading, and exiting
      */
-    private Connection openNewConnection(int remotePort) {
+    private Connection openNewConnection(String ip, int remotePort) {
         try {
             Socket socket = new Socket(
-                    InetAddress.getLocalHost(),
+                    InetAddress.getByName(ip),
                     remotePort
             );
             return new Connection(socket);
@@ -117,7 +119,7 @@ public class RFCPeerClient implements Runnable {
 
         @Override
         public void run() {
-            Connection conn = openNewConnection(RegServer.REGSERVER_PORT);
+            Connection conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
             KeepAliveMessage message = new KeepAliveMessage(
                     "RegServer",
                     new ArrayList<>( List.of(new P2PHeader("Cookie", Integer.toString(this.cookie))) )
