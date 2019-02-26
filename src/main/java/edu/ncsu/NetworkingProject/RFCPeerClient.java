@@ -24,6 +24,7 @@ public class RFCPeerClient implements Runnable {
     private final File rfcFolder;
     public static final int RFCS_TO_DOWNLOAD = 60;
     public static final int KEEP_ALIVE_TIMER = 60000;
+    private ArrayList<Long> downloadTimes = new ArrayList<>();
 
     public RFCPeerClient(String regServerIP, int portNumber, RFCIndex index) {
         this.regServerIP = regServerIP;
@@ -34,6 +35,7 @@ public class RFCPeerClient implements Runnable {
     }
 
     @Override public void run () {
+        long startTime = System.currentTimeMillis();
         Connection conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
         registerWithRegServer(conn);
         conn.close();
@@ -75,6 +77,10 @@ public class RFCPeerClient implements Runnable {
             conn.close();
             timer.cancel();
         }
+        long endTime = System.currentTimeMillis();
+        long cumulativeTime = endTime - startTime;
+        System.out.println(portNumber + ": Times for each download (ms):\n" + downloadTimes.toString());
+        System.out.println(portNumber + ": Total time:\n" + cumulativeTime + " ms");
     }
 
     /**
@@ -186,6 +192,7 @@ public class RFCPeerClient implements Runnable {
     }
 
     private void downloadRFC(Connection conn, RFCIndexEntry entry) {
+        long startTime = System.currentTimeMillis();
         GetRFCMessage message = new GetRFCMessage(
                 "RFC " + entry.getNumber(),
                 new ArrayList<>( List.of(new P2PHeader("Cookie", Integer.toString(this.cookie))) )
@@ -211,6 +218,8 @@ public class RFCPeerClient implements Runnable {
         } else {
             throw new UnexpectedMessageException(response);
         }
+        long endTime = System.currentTimeMillis();
+        downloadTimes.add(endTime - startTime);
     }
 
     private void leaveRegServer(Connection conn) {
