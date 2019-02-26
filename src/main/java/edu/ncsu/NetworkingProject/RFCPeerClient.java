@@ -62,6 +62,10 @@ public class RFCPeerClient implements Runnable {
             // Download the first RFC
             downloadRFC(peerB.getHostname(), peerB.getPortNumber(), index.index.get(0));
 
+            // Wait for the other peer to leave the server
+            try { Thread.sleep(1000); }
+            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
             // Re-check the PeerList
             peerList = getPeerList(regServerIP, RegServer.REGSERVER_PORT);
 
@@ -71,8 +75,18 @@ public class RFCPeerClient implements Runnable {
                     .ifPresent(entry -> { throw new RuntimeException("Peer B should have unregistered itself"); });
 
         } else if (numFiles == 2) {
-            // This is peer B, so just send KeepAlives
-            new Timer( true ).schedule( new KeepAliveThread(this.cookie), KEEP_ALIVE_TIMER );
+            // This is peer B, so just send KeepAlives until the server indicates to leave
+            Timer keepAliveTimer = new Timer( true );
+            keepAliveTimer.schedule( new KeepAliveThread(this.cookie), KEEP_ALIVE_TIMER );
+            try {
+                // Wait until the Server receives a single GetRFCMessage and signals the Client to leave.
+                Peer.stopSignal.await();
+                keepAliveTimer.cancel();
+                leaveRegServer(regServerIP, RegServer.REGSERVER_PORT);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
