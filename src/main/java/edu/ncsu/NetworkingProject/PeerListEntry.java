@@ -45,7 +45,10 @@ public class PeerListEntry implements Serializable {
     }
 
     public void setTTL ( final int TTL ) {
-        this.willExpireTime = System.currentTimeMillis() + TTL;
+        if (TTL <= 0) throw new IllegalArgumentException();
+
+        this.willExpireTime = System.currentTimeMillis() + TTL * 1000;
+        setActive(true);
     }
 
     public int getPortNumber () {

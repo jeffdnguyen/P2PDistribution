@@ -23,7 +23,7 @@ public class PeerList {
     public void cleanList() {
         backingList
                 .stream()
-                .filter(entry -> entry.getTTL() >= System.currentTimeMillis())
+                .filter(entry -> entry.getTTL() <= System.currentTimeMillis())
                 .forEach(entry -> entry.setActive(false));
     }
 
