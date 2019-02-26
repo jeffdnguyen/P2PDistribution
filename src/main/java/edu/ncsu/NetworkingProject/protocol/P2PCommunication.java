@@ -29,7 +29,19 @@ public abstract class P2PCommunication {
     }
 
     static void appendHeaders(StringBuilder stringBuilder, List<P2PHeader> headers) {
-        headers.add(new P2PHeader("Host", getHostname()));
+        
+        boolean noHostHeader = true;
+        for (P2PHeader header : headers) {
+            if (header.equals(new P2PHeader( "Host", getHostname() ) )) {
+                noHostHeader = false;
+                break;
+            }
+        }
+        
+        if (noHostHeader) {
+            headers.add( new P2PHeader( "Host", getHostname() ) );
+        }
+        
         for (P2PHeader header : headers) {
             stringBuilder.append(header.name);
             stringBuilder.append(": ");
@@ -44,9 +56,13 @@ public abstract class P2PCommunication {
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
         byte type = buffer.get();
         if (type == 0) {
-            return P2PMessage.constructMessageFromByteBuffer(buffer);
+          P2PMessage message = P2PMessage.constructMessageFromByteBuffer(buffer);
+          System.out.println(message.toString());
+          return message;
         } else if (type == 1) {
-            return P2PResponse.constructResponseFromByteBuffer(buffer);
+            P2PResponse response = P2PResponse.constructResponseFromByteBuffer(buffer);
+            System.out.println(response.toString());
+            return response;
         } else {
             throw new RuntimeException();
         }
