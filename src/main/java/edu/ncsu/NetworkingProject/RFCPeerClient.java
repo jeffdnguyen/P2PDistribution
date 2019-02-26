@@ -73,6 +73,7 @@ public class RFCPeerClient implements Runnable {
                     .filter(entry -> entry.getCookie() != this.cookie)
                     .findFirst()
                     .ifPresent(entry -> { throw new RuntimeException("Peer B should have unregistered itself"); });
+            leaveRegServer(regServerIP, RegServer.REGSERVER_PORT);
 
         } else if (numFiles == 2) {
             // This is peer B, so just send KeepAlives until the server indicates to leave

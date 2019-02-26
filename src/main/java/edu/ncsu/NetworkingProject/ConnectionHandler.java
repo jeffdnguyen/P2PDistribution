@@ -7,6 +7,8 @@ import edu.ncsu.NetworkingProject.protocol.messages.PQueryMessage;
 import edu.ncsu.NetworkingProject.protocol.messages.RegisterMessage;
 
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 class ConnectionHandler implements Runnable {
 
@@ -115,7 +117,11 @@ class ConnectionHandler implements Runnable {
             P2PResponse response;
             synchronized (peerList) {
                 peerList.cleanList();
-                response = new P2PResponse( Status.SUCCESS, Utils.objectToByteArray( peerList.getCopy() ) );
+                // "in response [the client] receives a list of *active* peers"
+                LinkedList<PeerListEntry> peerListToSend = peerList.getCopy().stream()
+                        .filter(PeerListEntry::isActive)
+                        .collect(Collectors.toCollection(LinkedList::new));
+                response = new P2PResponse( Status.SUCCESS, Utils.objectToByteArray( peerListToSend ) );
             }
             connection.send( response );
             System.out.println( "PQueryMessage received" );
