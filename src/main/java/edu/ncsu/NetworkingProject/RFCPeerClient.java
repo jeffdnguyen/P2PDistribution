@@ -91,12 +91,14 @@ public class RFCPeerClient implements Runnable {
                     break;
                 }
             }
-
+            // Copy the current RFCIndex so we don't lock it while downloading
+            LinkedList<RFCIndexEntry> indexToLoopOver;
             synchronized (index) {
-                for (RFCIndexEntry entry : index.index) {
-                    if (!entry.getHostname().equals(P2PCommunication.getHostname()) || entry.getPort() != portNumber) {
-                        downloadRFC(entry.getHostname(), entry.getPort(), entry);
-                    }
+                indexToLoopOver = new LinkedList<>(index.index);
+            }
+            for (RFCIndexEntry entry : indexToLoopOver) {
+                if (!entry.getHostname().equals(P2PCommunication.getHostname()) || entry.getPort() != portNumber) {
+                    downloadRFC(entry.getHostname(), entry.getPort(), entry);
                 }
             }
         }
