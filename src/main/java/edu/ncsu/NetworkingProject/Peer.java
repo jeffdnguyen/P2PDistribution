@@ -12,26 +12,12 @@ public class Peer {
     private static int portNumber;
     private static String regServerIP;
 
-    public static void main(String[] args) {
-        try {
-            regServerIP = args[0];
-            portNumber = Integer.parseInt(args[1]);
-        } catch(ArrayIndexOutOfBoundsException | NumberFormatException e) {
-            System.err.println("Peers must have their port number in args[0]");
-            throw e;
-        }
-        startRFCPeerServer();
-        startRFCPeerClient();
-    }
-
-    private static void startRFCPeerClient () {
-        RFCPeerClient client = new RFCPeerClient(regServerIP, portNumber, rfcIndex);
+    public static void start(String regServerIP, int portNumber, boolean isTestingScenario) {
+        RFCPeerClient client = new RFCPeerClient(regServerIP, portNumber, rfcIndex, isTestingScenario);
         Thread clientThread = new Thread(client);
         clientThread.setName("RFC client thread " + portNumber);
         clientThread.start();
-    }
 
-    private static void startRFCPeerServer () {
         RFCPeerServer server = new RFCPeerServer(portNumber, rfcIndex);
         Thread serverThread = new Thread(server);
         serverThread.setName("RFC server thread " + portNumber);

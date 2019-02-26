@@ -18,34 +18,81 @@ import java.util.*;
  */
 public class RFCPeerClient implements Runnable {
     private final String regServerIP;
+    private final boolean isTestingScenario;
     private int portNumber;
     private int cookie;
     private final RFCIndex index;
     private final File rfcFolder;
+    private ArrayList<Long> downloadTimes = new ArrayList<>();
     public static final int RFCS_TO_DOWNLOAD = 60;
     public static final int KEEP_ALIVE_TIMER = 60000;
-    private ArrayList<Long> downloadTimes = new ArrayList<>();
 
-    public RFCPeerClient(String regServerIP, int portNumber, RFCIndex index) {
+    public RFCPeerClient(String regServerIP, int portNumber, RFCIndex index, boolean isTestingScenario) {
         this.regServerIP = regServerIP;
         this.portNumber = portNumber;
         this.index = index;
         this.rfcFolder = new File("./rfcs/" + portNumber + "/");
         this.rfcFolder.mkdir();
+        this.isTestingScenario = isTestingScenario;
     }
 
     @Override public void run () {
-        long startTime = System.currentTimeMillis();
         Connection conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
         registerWithRegServer(conn);
         conn.close();
 
-        Timer timer = new Timer( true );
-        timer.schedule( new KeepAliveThread(this.cookie), KEEP_ALIVE_TIMER );
+        if (isTestingScenario) {
+            runTestingScenario();
+        } else {
+            runTask1or2();
+        }
+    }
 
-        int rfcsDownloaded = 0;
-        while(rfcFolder.listFiles().length < RFCS_TO_DOWNLOAD) {
+    private void runTestingScenario () {
+        // "There are two peers, A and B, initialized such that B has two RFCs and A has none"
+        int numFiles = rfcFolder.listFiles().length;
+        if (numFiles == 0) {
+            // This is peer A
+            Connection conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
+            LinkedList<PeerListEntry> peerList = getPeerList(conn);
+            conn.close();
+
+            // Find peerB in the PeerList and connect
+            PeerListEntry peerB = peerList.stream()
+                    .filter(entry -> entry.getCookie() != this.cookie)
+                    .findFirst().orElseThrow();
+            conn = openNewConnection(peerB.getHostname(), peerB.getPortNumber());
+            getRFCIndex(conn);
+            conn.close();
+
+            // Download the first RFC
+            conn = openNewConnection(peerB.getHostname(), peerB.getPortNumber());
+            downloadRFC(conn, index.index.get(0));
+            conn.close();
+
+            // Re-check the PeerList
             conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
+            peerList = getPeerList(conn);
+            conn.close();
+
+            peerList.stream()
+                    .filter(entry -> entry.getCookie() != this.cookie)
+                    .findFirst()
+                    .ifPresent(entry -> { throw new RuntimeException("Peer B should have unregistered itself"); });
+
+        } else if (numFiles == 2) {
+            // This is peer B, so just send KeepAlives
+            new Timer( true ).schedule( new KeepAliveThread(this.cookie), KEEP_ALIVE_TIMER );
+        }
+    }
+
+    private void runTask1or2 () {
+        long startTime = System.currentTimeMillis();
+
+        new Timer( true ).schedule( new KeepAliveThread(this.cookie), KEEP_ALIVE_TIMER );
+
+        while(rfcFolder.listFiles().length < RFCS_TO_DOWNLOAD) {
+            Connection conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
             LinkedList<PeerListEntry> peerList = getPeerList(conn);
             conn.close();
 
@@ -64,18 +111,10 @@ public class RFCPeerClient implements Runnable {
                     if (!entry.getHostname().equals(P2PCommunication.getHostname()) || entry.getPort() != portNumber) {
                         conn = openNewConnection(entry.getHostname(), entry.getPort());
                         downloadRFC(conn, entry);
-                        rfcsDownloaded++;
                         conn.close();
                     }
                 }
             }
-        }
-        // Only leave if the current peer isn't the one distributing all the files (like in Task 1)
-        if (rfcsDownloaded > 0) {
-            conn = openNewConnection(regServerIP, RegServer.REGSERVER_PORT);
-            leaveRegServer(conn);
-            conn.close();
-            timer.cancel();
         }
         long endTime = System.currentTimeMillis();
         long cumulativeTime = endTime - startTime;
