@@ -1,6 +1,7 @@
 package edu.ncsu.NetworkingProject;
 
 import edu.ncsu.NetworkingProject.protocol.P2PCommunication;
+import edu.ncsu.NetworkingProject.protocol.P2PResponse;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -27,6 +28,11 @@ public class Connection {
     public void send(P2PCommunication message) {
         byte[] data = message.toByteArray();
         try {
+            if (message instanceof P2PResponse) {
+                System.out.println(new String(data, 5, data.length - 5));
+            } else {
+                System.out.println(new String(data));
+            }
             output.writeInt(data.length);
             output.write(data);
         } catch (IOException e) {

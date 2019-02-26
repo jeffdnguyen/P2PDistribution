@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.List;
 
 public abstract class P2PCommunication {
@@ -56,13 +57,9 @@ public abstract class P2PCommunication {
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
         byte type = buffer.get();
         if (type == 0) {
-          P2PMessage message = P2PMessage.constructMessageFromByteBuffer(buffer);
-          System.out.println(message.toString());
-          return message;
+            return P2PMessage.constructMessageFromByteBuffer(buffer);
         } else if (type == 1) {
-            P2PResponse response = P2PResponse.constructResponseFromByteBuffer(buffer);
-            System.out.println(response.toString());
-            return response;
+            return P2PResponse.constructResponseFromByteBuffer(buffer);
         } else {
             throw new RuntimeException();
         }
