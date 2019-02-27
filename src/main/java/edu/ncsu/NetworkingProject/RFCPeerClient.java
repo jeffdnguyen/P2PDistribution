@@ -164,8 +164,6 @@ public class RFCPeerClient implements Runnable {
         } else {
             throw new UnexpectedMessageException(response);
         }
-        System.out.println(portNumber + ": Registered with RegServer");
-        conn.close();
     }
 
     /**
@@ -236,7 +234,6 @@ public class RFCPeerClient implements Runnable {
             RFCIndex otherIndex = Utils.byteArrayToObject(rfcIndexResponse.getData());
             synchronized (index) {
                 index.mergeWith(otherIndex);
-                System.out.println(portNumber + ": Got an RFCIndex of size " + otherIndex.index.size());
             }
         } else {
             conn.close();
@@ -257,7 +254,7 @@ public class RFCPeerClient implements Runnable {
         if ( response instanceof P2PResponse) {
             P2PResponse rfcResponse = (P2PResponse) response;
             if (!rfcResponse.getStatus().equals(Status.SUCCESS)) {
-                System.out.println("Failed to get RFC " + entry.getNumber());
+                //System.out.println("Failed to get RFC " + entry.getNumber());
             } else {
                 try {
                     OutputStream out = new BufferedOutputStream(
@@ -265,7 +262,6 @@ public class RFCPeerClient implements Runnable {
                     );
                     out.write(rfcResponse.getData());
                     out.close();
-                    System.out.println("Successfully downloaded RFC " + entry.getNumber());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -290,7 +286,6 @@ public class RFCPeerClient implements Runnable {
         if ( response instanceof P2PResponse) {
             P2PResponse leaveResponse = (P2PResponse) response;
             if (!leaveResponse.getStatus().equals(Status.SUCCESS)) {
-                System.out.println("Failed to leave RegServer. Retrying...");
                 try { Thread.sleep(1000); }
                 catch (InterruptedException e) { Thread.currentThread().interrupt(); }
                 conn.close();
@@ -300,7 +295,6 @@ public class RFCPeerClient implements Runnable {
             conn.close();
             throw new UnexpectedMessageException(response);
         }
-        System.out.println(portNumber + ": Left RegServer");
         conn.close();
     }
 }
