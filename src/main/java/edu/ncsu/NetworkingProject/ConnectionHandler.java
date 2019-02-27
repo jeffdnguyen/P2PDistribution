@@ -72,7 +72,6 @@ class ConnectionHandler implements Runnable {
                     currentCookie = peerList.getCopy().size();
                     newPeer.setCookie(currentCookie);
                     peerList.add( newPeer );
-                    System.out.println( "Registered a new peer with port " + portNumber + " and cookie " + currentCookie );
                 }
             }
             else {
@@ -109,7 +108,6 @@ class ConnectionHandler implements Runnable {
 
             P2PResponse response = new P2PResponse( Status.SUCCESS, request.getCookie() );
             connection.send( response );
-            System.out.println( "LeaveMessage received from peer " + request.getCookie() );
         }
         else if ( message instanceof PQueryMessage ) {
             P2PResponse response;
@@ -118,7 +116,6 @@ class ConnectionHandler implements Runnable {
                 response = new P2PResponse( Status.SUCCESS, Utils.objectToByteArray( peerList.getCopy() ) );
             }
             connection.send( response );
-            System.out.println( "PQueryMessage received" );
         }
         else if ( message instanceof KeepAliveMessage ) {
             KeepAliveMessage request = (KeepAliveMessage) message;
@@ -134,7 +131,6 @@ class ConnectionHandler implements Runnable {
 
             P2PResponse response = new P2PResponse( Status.SUCCESS, request.getCookie() );
             connection.send( response );
-            System.out.println( "KeepAliveMessage received from peer " + request.getCookie() );
         }
         else {
             throw new ProtocolException.NoSuchMessageType( message.getClass().toString() );

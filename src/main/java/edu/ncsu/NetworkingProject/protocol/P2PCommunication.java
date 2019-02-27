@@ -29,7 +29,10 @@ public abstract class P2PCommunication {
     }
 
     static void appendHeaders(StringBuilder stringBuilder, List<P2PHeader> headers) {
-        headers.add(new P2PHeader("Host", getHostname()));
+        if (headers.stream().noneMatch(header -> header.name.equals("Host"))) {
+            headers.add( new P2PHeader( "Host", getHostname() ) );
+        }
+        
         for (P2PHeader header : headers) {
             stringBuilder.append(header.name);
             stringBuilder.append(": ");
