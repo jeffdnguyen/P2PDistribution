@@ -64,7 +64,7 @@ class ConnectionHandler implements Runnable {
             if ( currentCookie == -1 ) {
                 PeerListEntry newPeer = new PeerListEntry();
 
-                newPeer.setHostname( P2PCommunication.getHostname() );
+                newPeer.setHostname( request.getHost() );
                 newPeer.setActive( true );
                 newPeer.setTTL( 7200 );
                 newPeer.setPortNumber( portNumber );

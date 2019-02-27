@@ -26,6 +26,7 @@ public class RegisterMessage extends P2PMessage {
      * Port number of the RFC server that the peer is listening to;
      */
     private final int portNumber;
+    private String host = null;
 
     /**
      * Cookie if this is not the first time registering
@@ -49,10 +50,16 @@ public class RegisterMessage extends P2PMessage {
 
         // Grab cookie from request if he has registered already in the past
         try {
-            cookie = Utils.getCookieFromHeaders(headers);
+            this.cookie = Utils.getCookieFromHeaders(headers);
         } catch (NoSuchElementException e) {
             // Leave it as -1
         }
+        try {
+            this.host = Utils.getHostFromHeaders(headers);
+        } catch (NoSuchElementException e) {
+            // Leave blank to allow construction without a hostname
+        }
+
     }
 
     /**
@@ -71,6 +78,10 @@ public class RegisterMessage extends P2PMessage {
      */
     public int getCookie () {
         return this.cookie;
+    }
+
+    public String getHost() {
+        return host;
     }
 
     /**

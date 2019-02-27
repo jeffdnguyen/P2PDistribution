@@ -36,4 +36,12 @@ public class Utils {
         return Integer.parseInt(cookie.value);
     }
 
+    public static String getHostFromHeaders(List<P2PHeader> headers) {
+        P2PHeader host = headers.stream()
+                .filter(header -> header.name.equals("Host"))
+                .findFirst()
+                .orElseThrow();
+        return host.value;
+    }
+
 }
