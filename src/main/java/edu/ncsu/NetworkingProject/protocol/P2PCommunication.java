@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.List;
 
 public abstract class P2PCommunication {
@@ -30,16 +29,7 @@ public abstract class P2PCommunication {
     }
 
     static void appendHeaders(StringBuilder stringBuilder, List<P2PHeader> headers) {
-        
-        boolean noHostHeader = true;
-        for (P2PHeader header : headers) {
-            if (header.equals(new P2PHeader( "Host", getHostname() ) )) {
-                noHostHeader = false;
-                break;
-            }
-        }
-        
-        if (noHostHeader) {
+        if (headers.stream().noneMatch(header -> header.name.equals("Host"))) {
             headers.add( new P2PHeader( "Host", getHostname() ) );
         }
         

@@ -15,8 +15,4 @@ public class P2PHeader {
         return name + ": " + value;
     }
     
-    
-    public boolean equals(P2PHeader otherHeader) {
-        return name.equals( otherHeader.name );
-    }
 }
