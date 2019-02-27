@@ -10,9 +10,9 @@ public class Peer {
     // When this hits 0, it signals the Server to stop and the Client to send a LeaveMessage
     public static final CountDownLatch stopSignal = new CountDownLatch(1);
 
-    public static void start(String regServerIP, int portNumber, boolean isTestingScenario) {
+    public static void start(String regServerIP, int portNumber, boolean isTestingScenario, boolean isBestCase) {
         RFCIndex rfcIndex = new RFCIndex();
-        RFCPeerClient client = new RFCPeerClient(regServerIP, portNumber, rfcIndex, isTestingScenario);
+        RFCPeerClient client = new RFCPeerClient(regServerIP, portNumber, rfcIndex, isTestingScenario, isBestCase);
         Thread clientThread = new Thread(client);
         clientThread.setName("RFC client thread " + portNumber);
         clientThread.start();
