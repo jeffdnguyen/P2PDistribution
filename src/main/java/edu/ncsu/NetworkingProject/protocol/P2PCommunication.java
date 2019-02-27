@@ -1,7 +1,10 @@
 package edu.ncsu.NetworkingProject.protocol;
 
+import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -20,10 +23,10 @@ public abstract class P2PCommunication {
     protected final String PROTOCOL_NAME = "P2P-DI";
 
     public static String getHostname() {
-        try(final DatagramSocket socket = new DatagramSocket()){
-            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+        try(final Socket socket = new Socket()){
+            socket.connect(new InetSocketAddress("google.com", 80));
             return socket.getLocalAddress().getHostAddress();
-        } catch (SocketException | UnknownHostException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
