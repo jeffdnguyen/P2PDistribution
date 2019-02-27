@@ -29,9 +29,9 @@ public class Connection {
         byte[] data = message.toByteArray();
         try {
             if (message instanceof P2PResponse) {
-                System.out.println(new String(data, 5, data.length - 5));
+                //System.out.println(new String(data, 5, data.length - 5));
             } else {
-                System.out.println(new String(data));
+                //System.out.println(new String(data));
             }
             output.writeInt(data.length);
             output.write(data);

@@ -23,6 +23,7 @@ public class RFCPeerClient implements Runnable {
     private int cookie;
     private final RFCIndex index;
     private final File rfcFolder;
+    private ArrayList<String> filesDownloaded = new ArrayList<>();
     private ArrayList<Long> downloadTimes = new ArrayList<>();
     public static final int RFCS_TO_DOWNLOAD = 60;
     public static final int KEEP_ALIVE_TIMER = 60000;
@@ -37,6 +38,10 @@ public class RFCPeerClient implements Runnable {
     }
 
     @Override public void run () {
+        File[] files = rfcFolder.listFiles();
+        for(File file : files) {
+            filesDownloaded.add(file.getName());
+        }
         registerWithRegServer(regServerIP, RegServer.REGSERVER_PORT);
 
         if (isTestingScenario) {
@@ -48,8 +53,7 @@ public class RFCPeerClient implements Runnable {
 
     private void runTestingScenario () {
         // "There are two peers, A and B, initialized such that B has two RFCs and A has none"
-        int numFiles = rfcFolder.listFiles().length;
-        if (numFiles == 0) {
+        if (filesDownloaded.size() == 0) {
             // This is peer A
             LinkedList<PeerListEntry> peerList = getPeerList(regServerIP, RegServer.REGSERVER_PORT);
 
@@ -75,7 +79,7 @@ public class RFCPeerClient implements Runnable {
                     .ifPresent(entry -> { throw new RuntimeException("Peer B should have unregistered itself"); });
             leaveRegServer(regServerIP, RegServer.REGSERVER_PORT);
 
-        } else if (numFiles == 2) {
+        } else if (filesDownloaded.size() == 2) {
             // This is peer B, so just send KeepAlives until the server indicates to leave
             Timer keepAliveTimer = new Timer( true );
             keepAliveTimer.schedule( new KeepAliveThread(this.cookie), KEEP_ALIVE_TIMER );
@@ -96,7 +100,7 @@ public class RFCPeerClient implements Runnable {
 
         new Timer( true ).schedule( new KeepAliveThread(this.cookie), KEEP_ALIVE_TIMER );
 
-        while(rfcFolder.listFiles().length < RFCS_TO_DOWNLOAD) {
+        while(filesDownloaded.size() < RFCS_TO_DOWNLOAD) {
             LinkedList<PeerListEntry> peerList = getPeerList(regServerIP, RegServer.REGSERVER_PORT);
 
             for(PeerListEntry peer : peerList) {
@@ -112,11 +116,11 @@ public class RFCPeerClient implements Runnable {
                 indexToLoopOver = new LinkedList<>(index.index);
             }
             // Uncomment this line to simulate the "best case" (all peers evenly download from all peers)
-            // Collections.shuffle(indexToLoopOver);
+            Collections.shuffle(indexToLoopOver);
             // Or uncomment this line to simulate the "worst case" (all peers crowd one peer at a time)
-            indexToLoopOver.sort(Comparator.comparingInt(RFCIndexEntry::getNumber));
+            // indexToLoopOver.sort(Comparator.comparingInt(RFCIndexEntry::getNumber));
             for (RFCIndexEntry entry : indexToLoopOver) {
-                if (!entry.getHostname().equals(P2PCommunication.getHostname()) || entry.getPort() != portNumber) {
+                if (filesDownloaded.stream().noneMatch(e -> e.contains(Integer.toString(entry.getNumber())))) {
                     downloadRFC(entry.getHostname(), entry.getPort(), entry);
                 }
             }
@@ -257,11 +261,13 @@ public class RFCPeerClient implements Runnable {
                 //System.out.println("Failed to get RFC " + entry.getNumber());
             } else {
                 try {
+                    String fileName = "rfc" + entry.getNumber() + ".txt";
                     OutputStream out = new BufferedOutputStream(
-                            new FileOutputStream(rfcFolder.getPath() + "/rfc" + entry.getNumber() + ".txt")
+                            new FileOutputStream(rfcFolder.getPath() + "/" + fileName)
                     );
                     out.write(rfcResponse.getData());
                     out.close();
+                    filesDownloaded.add(fileName);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
