@@ -3,7 +3,7 @@ package edu.ncsu.NetworkingProject;
 import java.io.Serializable;
 
 public class PeerListEntry implements Serializable {
-    
+
     private String        hostname;
 
     private int           cookie;

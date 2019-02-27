@@ -16,9 +16,9 @@ public class RFCPeerServer implements Runnable {
     private final RFCIndex rfcIndex;
     private final ServerSocket socket;
     private final File rfcFolder;
+    private final boolean isTestingScenario;
 
-
-    public RFCPeerServer(int port, RFCIndex rfcIndex) {
+    public RFCPeerServer(int port, RFCIndex rfcIndex, boolean isTestingScenario) {
         this.rfcIndex = rfcIndex;
         try {
             this.socket = new ServerSocket(port);
@@ -27,6 +27,7 @@ public class RFCPeerServer implements Runnable {
         }
         this.rfcFolder = new File("./rfcs/" + port);
         this.rfcFolder.mkdir();
+        this.isTestingScenario = isTestingScenario;
         addLocalRFCFiles(port);
     }
 
@@ -76,6 +77,11 @@ public class RFCPeerServer implements Runnable {
                             throw new RuntimeException("Trouble reading file", e);
                         }
                         connection.send(new P2PResponse(Status.SUCCESS, rfcFileAsBytes));
+                        if (isTestingScenario) {
+                            // Signal to the Client to send a LeaveMessage
+                            Peer.stopSignal.countDown();
+                            return;
+                        }
                     } else {
                         throw new ProtocolException.UnexpectedMessageException(message);
                     }
