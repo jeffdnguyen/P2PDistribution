@@ -31,7 +31,7 @@ public class Connection {
             if (message instanceof P2PResponse) {
                 System.out.println(new String(data, 5, data.length - 5));
             } else {
-                System.out.println(new String(data));
+                System.out.println(new String(data, 1, data.length - 1));
             }
             output.writeInt(data.length);
             output.write(data);

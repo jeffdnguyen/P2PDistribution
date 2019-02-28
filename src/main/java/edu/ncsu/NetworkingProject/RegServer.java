@@ -5,7 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class RegServer implements Runnable {
-    public final static int REGSERVER_PORT = 65423;
+    public final static int REGSERVER_PORT = 65243;
 
     @SuppressWarnings ( "unused" )
     public void run () {

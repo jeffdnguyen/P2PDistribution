@@ -19,6 +19,7 @@ import java.util.*;
 public class RFCPeerClient implements Runnable {
     private final String regServerIP;
     private final boolean isTestingScenario;
+    private final boolean isBestCase;
     private int portNumber;
     private int cookie;
     private final RFCIndex index;
@@ -28,13 +29,14 @@ public class RFCPeerClient implements Runnable {
     public static final int RFCS_TO_DOWNLOAD = 60;
     public static final int KEEP_ALIVE_TIMER = 60000;
 
-    public RFCPeerClient(String regServerIP, int portNumber, RFCIndex index, boolean isTestingScenario) {
+    public RFCPeerClient(String regServerIP, int portNumber, RFCIndex index, boolean isTestingScenario, boolean isBestCase) {
         this.regServerIP = regServerIP;
         this.portNumber = portNumber;
         this.index = index;
         this.rfcFolder = new File("./rfcs/" + portNumber + "/");
         this.rfcFolder.mkdir();
         this.isTestingScenario = isTestingScenario;
+        this.isBestCase = isBestCase;
     }
 
     @Override public void run () {
@@ -115,10 +117,11 @@ public class RFCPeerClient implements Runnable {
             synchronized (index) {
                 indexToLoopOver = new LinkedList<>(index.index);
             }
-            // Uncomment this line to simulate the "best case" (all peers evenly download from all peers)
-            Collections.shuffle(indexToLoopOver);
-            // Or uncomment this line to simulate the "worst case" (all peers crowd one peer at a time)
-            // indexToLoopOver.sort(Comparator.comparingInt(RFCIndexEntry::getNumber));
+            if (this.isBestCase) {
+                Collections.shuffle(indexToLoopOver);
+            } else {
+                indexToLoopOver.sort(Comparator.comparingInt(RFCIndexEntry::getNumber));
+            }
             for (RFCIndexEntry entry : indexToLoopOver) {
                 if (filesDownloaded.stream().noneMatch(e -> e.contains(Integer.toString(entry.getNumber())))) {
                     downloadRFC(entry.getHostname(), entry.getPort(), entry);
