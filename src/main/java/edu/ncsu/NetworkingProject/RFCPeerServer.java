@@ -72,7 +72,8 @@ public class RFCPeerServer implements Runnable {
 
                             rfcFileAsBytes = fileIn.readAllBytes();
                         } catch (FileNotFoundException e) {
-                            throw new RuntimeException("File could not be found!", e);
+                            connection.send(new P2PResponse(Status.NOT_FOUND));
+                            continue;
                         } catch (IOException e) {
                             throw new RuntimeException("Trouble reading file", e);
                         }

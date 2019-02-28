@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,6 +37,12 @@ public class P2PResponse extends P2PCommunication {
         this.status = status;
         this.headers = new ArrayList<>();
         this.headers.add( new P2PHeader("Cookie", String.valueOf(cookie)) );
+        this.data = new byte[0];
+    }
+
+    public P2PResponse(Status status) {
+        this.status = status;
+        this.headers = new ArrayList<>();
         this.data = new byte[0];
     }
 

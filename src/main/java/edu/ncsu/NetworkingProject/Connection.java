@@ -28,11 +28,13 @@ public class Connection {
     public void send(P2PCommunication message) {
         byte[] data = message.toByteArray();
         try {
+            System.out.print(message.toString());
             if (message instanceof P2PResponse) {
-                System.out.println(new String(data, 5, data.length - 5));
+                System.out.println("*data*\n");
             } else {
-                System.out.println(new String(data, 1, data.length - 1));
+                System.out.println();
             }
+
             output.writeInt(data.length);
             output.write(data);
         } catch (IOException e) {
